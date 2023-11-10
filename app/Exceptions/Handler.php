@@ -40,7 +40,7 @@ class Handler extends ExceptionHandler
      */
     public function register(): void
     {
-        $this->reportable(function (Throwable $e, $request) {
+        $this->renderable(function (Throwable $e, $request) {
             if ($e instanceof CustomErrorException) {
                 return $this->errorResponse($e->getMessage(), $e->getCode());
             }
