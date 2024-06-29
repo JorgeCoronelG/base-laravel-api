@@ -2,8 +2,8 @@
 
 namespace App\Core\Traits;
 
+use App\Core\Enum\Message;
 use App\Exceptions\CustomErrorException;
-use App\Helpers\Enum\Message;
 use Illuminate\Database\Eloquent\Builder;
 use Symfony\Component\HttpFoundation\Response;
 

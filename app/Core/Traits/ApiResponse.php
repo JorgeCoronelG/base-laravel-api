@@ -13,7 +13,10 @@ trait ApiResponse
     /**
      * Función que retorna una respuesta JSON exitosa
      */
-    protected function successResponse(ResourceCollection | array $data, int $code): JsonResponse
+    protected function successResponse(
+        ResourceCollection | JsonResource | array $data,
+        int $code
+    ): JsonResponse
     {
         return response()->json($data, $code);
     }
@@ -55,6 +58,6 @@ trait ApiResponse
      */
     protected function showOne(JsonResource $resource, int $code = 200): JsonResponse
     {
-        return $this->successResponse(['data' => $resource], $code);
+        return $this->successResponse($resource, $code);
     }
 }

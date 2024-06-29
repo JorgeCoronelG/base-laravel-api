@@ -101,4 +101,11 @@ class BaseRepository implements BaseRepositoryInterface
         $entity->saveOrFail();
         return $entity;
     }
+
+    public function bulkUpdate(array $ids, array $data, string $primaryKey = 'id'): int
+    {
+        return $this->entity
+            ->whereIn($primaryKey, $ids)
+            ->update($data);
+    }
 }

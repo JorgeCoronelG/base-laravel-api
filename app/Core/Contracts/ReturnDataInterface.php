@@ -4,5 +4,5 @@ namespace App\Core\Contracts;
 
 interface ReturnDataInterface
 {
-    public function toData(): \Spatie\LaravelData\Data;
+    public function toData(): \Spatie\LaravelData\Data | array;
 }

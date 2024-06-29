@@ -27,4 +27,6 @@ interface BaseRepositoryInterface
     public function sync(int $id, string $relation, array $attributes, bool $detaching = true): array;
 
     public function update(int $id, array $data): \Illuminate\Database\Eloquent\Model;
+
+    public function bulkUpdate(array $ids, array $data, string $primaryKey = 'id'): int;
 }
