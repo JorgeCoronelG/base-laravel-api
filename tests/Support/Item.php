@@ -14,7 +14,9 @@ class Item extends Model
 
     protected $fillable = ['name', 'status'];
 
+    /** @var array<int, string> */
     public array $allowedSorts = ['id', 'name', 'status'];
 
+    /** @var array<int, string> */
     public array $allowedFilters = ['id', 'name', 'status'];
 }

@@ -3,7 +3,11 @@
 namespace {{ namespace }};
 
 use App\Core\Contracts\BaseServiceInterface;
+use {{ model }};
 
+/**
+ * @extends BaseServiceInterface<{{ modelName }}>
+ */
 interface {{ class }} extends BaseServiceInterface
 {
     //

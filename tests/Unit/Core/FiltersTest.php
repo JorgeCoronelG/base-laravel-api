@@ -88,6 +88,14 @@ class FiltersTest extends TestCase
         Validation::getFilters(json_encode(['filters' => [['field' => 'name', 'value' => 'a', 'operator' => '=', 'boolean' => 'xor']]]));
     }
 
+    public function test_get_filters_with_non_scalar_value_is_bad_request(): void
+    {
+        $this->expectException(CustomErrorException::class);
+        $this->expectExceptionCode(400);
+
+        Validation::getFilters(json_encode(['filters' => [['field' => 'name', 'value' => ['x'], 'operator' => '=']]]));
+    }
+
     public function test_get_filters_accepts_is_null_without_value(): void
     {
         $filters = Validation::getFilters(json_encode(['filters' => [['field' => 'status', 'operator' => 'IS NULL']]]));

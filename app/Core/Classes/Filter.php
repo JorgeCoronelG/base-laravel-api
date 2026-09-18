@@ -11,7 +11,7 @@ class Filter
      */
     public function __construct(
         public string $field,
-        public mixed $value,
+        public string|int|float|bool|null $value,
         public OperatorSql $operator,
         public string $boolean = 'and'
     ) {}

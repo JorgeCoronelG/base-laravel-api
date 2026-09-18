@@ -52,15 +52,16 @@ class Validation
 
             $operator = OperatorSql::tryFrom($filter[QueryParam::OPERATOR_SQL_KEY]);
             $boolean = strtolower($filter[QueryParam::BOOLEAN_KEY] ?? 'and');
+            $value = $filter[QueryParam::VALUE_KEY] ?? null;
 
-            if (is_null($operator) || ! in_array($boolean, ['and', 'or'], true)) {
+            if (is_null($operator) || ! in_array($boolean, ['and', 'or'], true) || (! is_null($value) && ! is_scalar($value))) {
                 throw new CustomErrorException(Message::INVALID_QUERY_PARAMETER, Response::HTTP_BAD_REQUEST);
             }
 
             // IS NULL / IS NOT NULL no necesitan valor.
             $arrayFilters[] = new Filter(
                 $filter[QueryParam::FIELD_KEY],
-                $filter[QueryParam::VALUE_KEY] ?? null,
+                $value,
                 $operator,
                 $boolean
             );

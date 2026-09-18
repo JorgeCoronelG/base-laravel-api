@@ -65,7 +65,7 @@ Cada uno crea la interfaz en `app/Contracts/...`, la implementación en `app/Rep
 
 | Opción                     | Efecto                                                                  |
 |----------------------------|-------------------------------------------------------------------------|
-| `--model=Inventory/Part`   | (repositorio) modelo a usar; por defecto `App\Models\<Nombre>`           |
+| `--model=Inventory/Part`   | modelo a usar (repositorio y servicio); por defecto `App\Models\<Nombre>` |
 | `--repository=Customer`    | (servicio) repositorio a inyectar; por defecto el mismo nombre           |
 | `--force`                  | sobrescribe los archivos si ya existen                                  |
 
@@ -74,6 +74,9 @@ Se pueden usar subcarpetas (`Inventory/Part`) y el sufijo `Repository`/`Service`
 El resultado es equivalente a hacerlo a mano. Para un repositorio:
 
 ```php
+/**
+ * @extends BaseRepository<Product>
+ */
 class ProductRepository extends BaseRepository implements ProductRepositoryInterface
 {
     public function __construct(Product $entity)
@@ -86,6 +89,9 @@ class ProductRepository extends BaseRepository implements ProductRepositoryInter
 y para un servicio:
 
 ```php
+/**
+ * @extends BaseService<Product>
+ */
 class ProductService extends BaseService implements ProductServiceInterface
 {
     public function __construct(ProductRepositoryInterface $repository)
@@ -96,6 +102,10 @@ class ProductService extends BaseService implements ProductServiceInterface
 ```
 
 Las interfaces extienden `BaseRepositoryInterface` / `BaseServiceInterface`; se puede reducir a `ReadableRepositoryInterface`, `WritableRepositoryInterface`, `BulkRepositoryInterface` o `RelationSyncRepositoryInterface` si no se necesita todo.
+
+### Tipos genéricos
+
+`BaseRepository`, `BaseService` y sus interfaces son genéricos (`@template TModel`). La anotación `@extends BaseRepository<Product>` (que ya generan los comandos) hace que `findById`, `create`, `update`, `findAll`, etc. devuelvan `Product` y no `Model`, con autocompletado y análisis estático. Si se escribe a mano, no olvidar la anotación en la clase y en su interfaz (`@extends BaseRepositoryInterface<Product>`).
 
 Los ids pueden ser `int` o `string` (UUID/ULID).
 
@@ -114,7 +124,10 @@ Desde un job o un comando se puede construir directamente: `new ListQuery($filte
 Cada modelo que use los traits `AdvancedFilter` y `Sortable` declara qué campos se pueden filtrar y ordenar:
 
 ```php
+/** @var array<int, string> */
 public array $allowedFilters = ['id', 'name', 'status'];
+
+/** @var array<int, string> */
 public array $allowedSorts = ['id', 'name', 'status'];
 ```
 

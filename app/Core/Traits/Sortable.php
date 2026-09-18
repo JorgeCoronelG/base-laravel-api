@@ -10,6 +10,9 @@ use Symfony\Component\HttpFoundation\Response;
 trait Sortable
 {
     /**
+     * @param  Builder<static>  $query
+     * @return Builder<static>
+     *
      * @throws CustomErrorException
      */
     public function scopeApplySort(Builder $query, ?string $sort = null): Builder
@@ -22,17 +25,19 @@ trait Sortable
             throw new CustomErrorException(Message::getMessageHasNotAllowedSorts(get_class($this)), Response::HTTP_INTERNAL_SERVER_ERROR);
         }
 
+        /** @var array<int, string> $allowedSorts */
+        $allowedSorts = $this->allowedSorts;
         $sortFields = explode(',', $sort);
 
         foreach ($sortFields as $sortField) {
-            $direction = 'ASC';
+            $direction = 'asc';
 
             if (str_starts_with($sortField, '-')) {
-                $direction = 'DESC';
+                $direction = 'desc';
                 $sortField = substr($sortField, 1);
             }
 
-            if (! collect($this->allowedSorts)->contains($sortField)) {
+            if (! in_array($sortField, $allowedSorts, true)) {
                 throw new CustomErrorException(Message::INVALID_QUERY_PARAMETER, Response::HTTP_BAD_REQUEST);
             }
 

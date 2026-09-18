@@ -4,16 +4,26 @@ namespace App\Core;
 
 use App\Core\Classes\Filter;
 use App\Core\Contracts\BaseRepositoryInterface;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Pagination\LengthAwarePaginator;
 
+/**
+ * @template TModel of Model
+ *
+ * @implements BaseRepositoryInterface<TModel>
+ */
 class BaseRepository implements BaseRepositoryInterface
 {
+    /**
+     * @param  TModel  $entity
+     */
     public function __construct(protected Model $entity) {}
 
     /**
      * @param  array<string, mixed>  $data
+     * @return TModel
      *
      * @throws \Throwable
      */
@@ -55,23 +65,20 @@ class BaseRepository implements BaseRepositoryInterface
     /**
      * @param  array<int, Filter>  $filter
      * @param  array<int, string>  $columns
-     * @return Collection<int, Model>
+     * @return Collection<int, TModel>
      */
     public function findAll(
         array $filter = [],
         ?string $sort = null,
         array $columns = ['*']
     ): Collection {
-        return $this->entity
-            ->filter($filter)
-            ->applySort($sort)
-            ->get($columns);
+        return $this->listQuery($filter, $sort)->get($columns);
     }
 
     /**
      * @param  array<int, Filter>  $filters
      * @param  array<int, string>  $columns
-     * @return LengthAwarePaginator<int, Model>
+     * @return LengthAwarePaginator<int, TModel>
      */
     public function findAllPaginated(
         array $filters,
@@ -79,34 +86,35 @@ class BaseRepository implements BaseRepositoryInterface
         ?string $sort = null,
         array $columns = ['*']
     ): LengthAwarePaginator {
-        return $this->entity
-            ->filter($filters)
-            ->applySort($sort)
-            ->paginate($limit, $columns);
+        return $this->listQuery($filters, $sort)->paginate($limit, $columns);
     }
 
     /**
      * @param  array<int, string>  $columns
+     * @return TModel
      */
     public function findById(int|string $id, array $columns = ['*']): Model
     {
-        return $this->entity->findOrFail($id, $columns);
+        return $this->entity->newQuery()->findOrFail($id, $columns);
     }
 
+    /**
+     * @return TModel
+     */
     public function findRandom(): Model
     {
-        return $this->entity
+        return $this->entity->newQuery()
             ->inRandomOrder()
             ->limit(1)
             ->firstOrFail();
     }
 
     /**
-     * @return Collection<int, Model>
+     * @return Collection<int, TModel>
      */
     public function findRandoms(int $records = 1): Collection
     {
-        return $this->entity
+        return $this->entity->newQuery()
             ->inRandomOrder()
             ->limit($records)
             ->get();
@@ -125,6 +133,7 @@ class BaseRepository implements BaseRepositoryInterface
 
     /**
      * @param  array<string, mixed>  $data
+     * @return TModel
      *
      * @throws \Throwable
      */
@@ -146,5 +155,17 @@ class BaseRepository implements BaseRepositoryInterface
         return $this->entity
             ->whereIn($primaryKey, $ids)
             ->update($data);
+    }
+
+    /**
+     * Consulta con los scopes de filtro y orden (traits AdvancedFilter y Sortable del modelo).
+     *
+     * @param  array<int, Filter>  $filters
+     * @return Builder<TModel>
+     */
+    private function listQuery(array $filters, ?string $sort): Builder
+    {
+        /** @var Builder<TModel> */
+        return $this->entity->newQuery()->filter($filters)->applySort($sort);
     }
 }

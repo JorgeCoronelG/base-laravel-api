@@ -56,7 +56,7 @@ class MakeServiceCommand extends GeneratesContractedClass
             $this->components->warn("El repositorio [{$repository}Repository] no existe todavía. Créelo con make:repository o use --repository.");
         }
 
-        return [
+        return $this->modelReplacements($baseName, warnIfMissing: false) + [
             '{{ repositoryInterface }}' => $repositoryInterface,
             '{{ repositoryInterfaceName }}' => class_basename($repositoryInterface),
         ];

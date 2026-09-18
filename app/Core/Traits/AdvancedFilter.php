@@ -7,6 +7,7 @@ use App\Core\Enum\Message;
 use App\Core\Enum\OperatorSql;
 use App\Exceptions\CustomErrorException;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 use Symfony\Component\HttpFoundation\Response;
 
 trait AdvancedFilter
@@ -16,7 +17,9 @@ trait AdvancedFilter
      * o scopes globales de la consulta. Entre sí se unen con AND, salvo que el filtro indique 'or'.
      * Solo se pueden filtrar los campos de la propiedad pública allowedFilters del modelo.
      *
-     * @param  Filter[]  $filters
+     * @param  Builder<static>  $query
+     * @param  array<int, Filter>  $filters
+     * @return Builder<static>
      *
      * @throws CustomErrorException
      */
@@ -33,8 +36,11 @@ trait AdvancedFilter
             );
         }
 
+        /** @var array<int, string> $allowedFilters */
+        $allowedFilters = $this->allowedFilters;
+
         foreach ($filters as $filter) {
-            if (! in_array($filter->field, $this->allowedFilters, true)) {
+            if (! in_array($filter->field, $allowedFilters, true)) {
                 throw new CustomErrorException(Message::INVALID_QUERY_PARAMETER, Response::HTTP_BAD_REQUEST);
             }
         }
@@ -46,6 +52,9 @@ trait AdvancedFilter
         });
     }
 
+    /**
+     * @param  Builder<covariant Model>  $query
+     */
     private function filterAdvanced(Builder $query, Filter $filter): void
     {
         $field = $filter->field;

@@ -256,4 +256,40 @@ class MakeCommandsTest extends TestCase
 
         return array_column($pairs, 2, 1);
     }
+
+    public function test_generated_repository_and_interface_are_typed_with_the_model(): void
+    {
+        $this->artisan('make:repository', ['name' => 'Cog'])->assertSuccessful();
+
+        $class = $this->read('Repositories/CogRepository.php');
+        $this->assertStringContainsString('@extends BaseRepository<Cog>', $class);
+
+        $interface = $this->read('Contracts/Repositories/CogRepositoryInterface.php');
+        $this->assertStringContainsString('use App\Models\Cog;', $interface);
+        $this->assertStringContainsString('@extends BaseRepositoryInterface<Cog>', $interface);
+    }
+
+    public function test_generated_service_and_interface_are_typed_with_the_model(): void
+    {
+        $this->artisan('make:repository', ['name' => 'Lever'])->assertSuccessful();
+        $this->artisan('make:service', ['name' => 'Lever'])->assertSuccessful();
+
+        $class = $this->read('Services/LeverService.php');
+        $this->assertStringContainsString('use App\Models\Lever;', $class);
+        $this->assertStringContainsString('@extends BaseService<Lever>', $class);
+
+        $this->assertStringContainsString(
+            '@extends BaseServiceInterface<Lever>',
+            $this->read('Contracts/Services/LeverServiceInterface.php')
+        );
+    }
+
+    public function test_make_service_accepts_a_custom_model(): void
+    {
+        $this->artisan('make:service', ['name' => 'Gear', '--model' => 'Hardware/Cog'])->assertSuccessful();
+
+        $class = $this->read('Services/GearService.php');
+        $this->assertStringContainsString('use App\Models\Hardware\Cog;', $class);
+        $this->assertStringContainsString('@extends BaseService<Cog>', $class);
+    }
 }

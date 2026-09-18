@@ -136,12 +136,34 @@ abstract class GeneratesContractedClass extends GeneratorCommand
     }
 
     /**
+     * Valores de los stubs relacionados con el modelo (--model, por defecto el mismo nombre en App\Models).
+     *
+     * @return array<string, string>
+     */
+    protected function modelReplacements(string $baseName, bool $warnIfMissing): array
+    {
+        $model = $this->option('model');
+        $model = is_string($model) && $model !== '' ? $model : $baseName;
+        $model = Str::startsWith($model, 'App\\') ? $model : 'App\Models\\'.str_replace('/', '\\', $model);
+
+        if ($warnIfMissing && ! class_exists($model)) {
+            $this->components->warn("El modelo [$model] no existe todavía. Créelo o use --model.");
+        }
+
+        return [
+            '{{ model }}' => $model,
+            '{{ modelName }}' => class_basename($model),
+        ];
+    }
+
+    /**
      * @return array<int, array<int, mixed>>
      */
     protected function getOptions(): array
     {
         return [
             ['force', 'f', InputOption::VALUE_NONE, 'Sobrescribe los archivos si ya existen'],
+            ['model', 'm', InputOption::VALUE_REQUIRED, 'Modelo (por defecto, el mismo nombre en App\Models)'],
         ];
     }
 }
