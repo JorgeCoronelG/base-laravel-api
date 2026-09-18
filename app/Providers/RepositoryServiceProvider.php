@@ -10,6 +10,7 @@ class RepositoryServiceProvider extends ServiceProvider
 
     public const IMPLEMENT_REPOSITORY_NAMESPACE = 'App\Repositories\\';
 
+    /** @var array<string, string> Interfaz => implementación (nombres relativos a Contracts y Repositories) */
     protected array $repositories = [
         //
     ];

@@ -10,6 +10,7 @@ class ServiceLogicServiceProvider extends ServiceProvider
 
     public const IMPLEMENT_SERVICE_NAMESPACE = 'App\Services\\';
 
+    /** @var array<string, string> Interfaz => implementación (nombres relativos a Contracts y Services) */
     protected array $services = [
         //
     ];

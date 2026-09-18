@@ -16,7 +16,7 @@ class Permission
      *
      * @throws AuthorizationException
      */
-    public function handle(Request $request, Closure $next, ...$roleIds): Response
+    public function handle(Request $request, Closure $next, string|int ...$roleIds): Response
     {
         // Los parámetros de middleware (permission:1,2) llegan como string, por eso se compara como string.
         $roleId = (string) auth()->user()->role->id;

@@ -2,6 +2,7 @@
 
 namespace App\Core;
 
+use App\Core\Classes\Filter;
 use App\Core\Classes\ListQuery;
 use App\Core\Contracts\BaseRepositoryInterface;
 use App\Core\Contracts\BaseServiceInterface;
@@ -24,6 +25,11 @@ class BaseService implements BaseServiceInterface
         $this->entityRepository->delete($id);
     }
 
+    /**
+     * @param  array<int, Filter>  $filter
+     * @param  array<int, string>  $columns
+     * @return Collection<int, Model>
+     */
     public function findAll(
         array $filter = [],
         ?string $sort = null,
@@ -32,6 +38,10 @@ class BaseService implements BaseServiceInterface
         return $this->entityRepository->findAll($filter, $sort, $columns);
     }
 
+    /**
+     * @param  array<int, string>  $columns
+     * @return LengthAwarePaginator<int, Model>
+     */
     public function findAllPaginated(ListQuery $query, array $columns = ['*']): LengthAwarePaginator
     {
         return $this->entityRepository->findAllPaginated(
@@ -42,6 +52,9 @@ class BaseService implements BaseServiceInterface
         );
     }
 
+    /**
+     * @param  array<int, string>  $columns
+     */
     public function findById(int|string $id, array $columns = ['*']): Model
     {
         return $this->entityRepository->findById($id, $columns);
@@ -52,6 +65,9 @@ class BaseService implements BaseServiceInterface
         return $this->entityRepository->findRandom();
     }
 
+    /**
+     * @return Collection<int, Model>
+     */
     public function findRandoms(int $records = 1): Collection
     {
         return $this->entityRepository->findRandoms($records);

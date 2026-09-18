@@ -2,6 +2,7 @@
 
 namespace App\Core;
 
+use App\Core\Classes\Filter;
 use App\Core\Contracts\BaseRepositoryInterface;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
@@ -12,6 +13,8 @@ class BaseRepository implements BaseRepositoryInterface
     public function __construct(protected Model $entity) {}
 
     /**
+     * @param  array<string, mixed>  $data
+     *
      * @throws \Throwable
      */
     public function create(array $data): Model
@@ -22,6 +25,9 @@ class BaseRepository implements BaseRepositoryInterface
         return $entity;
     }
 
+    /**
+     * @param  array<int, array<string, mixed>>  $data
+     */
     public function bulkInsert(array $data): bool
     {
         return $this->entity->insert($data);
@@ -33,6 +39,9 @@ class BaseRepository implements BaseRepositoryInterface
         $entity->delete();
     }
 
+    /**
+     * @param  array<int, int|string>  $ids
+     */
     public function bulkDelete(array $ids, string $primaryKey = 'id'): int
     {
         return $this->entity
@@ -40,6 +49,11 @@ class BaseRepository implements BaseRepositoryInterface
             ->delete();
     }
 
+    /**
+     * @param  array<int, Filter>  $filter
+     * @param  array<int, string>  $columns
+     * @return Collection<int, Model>
+     */
     public function findAll(
         array $filter = [],
         ?string $sort = null,
@@ -51,6 +65,11 @@ class BaseRepository implements BaseRepositoryInterface
             ->get($columns);
     }
 
+    /**
+     * @param  array<int, Filter>  $filters
+     * @param  array<int, string>  $columns
+     * @return LengthAwarePaginator<int, Model>
+     */
     public function findAllPaginated(
         array $filters,
         int $limit,
@@ -63,6 +82,9 @@ class BaseRepository implements BaseRepositoryInterface
             ->paginate($limit, $columns);
     }
 
+    /**
+     * @param  array<int, string>  $columns
+     */
     public function findById(int|string $id, array $columns = ['*']): Model
     {
         return $this->entity->findOrFail($id, $columns);
@@ -76,6 +98,9 @@ class BaseRepository implements BaseRepositoryInterface
             ->firstOrFail();
     }
 
+    /**
+     * @return Collection<int, Model>
+     */
     public function findRandoms(int $records = 1): Collection
     {
         return $this->entity
@@ -84,6 +109,10 @@ class BaseRepository implements BaseRepositoryInterface
             ->get();
     }
 
+    /**
+     * @param  array<int|string, mixed>  $attributes
+     * @return array<string, array<int, int|string>>
+     */
     public function sync(int|string $id, string $relation, array $attributes, bool $detaching = true): array
     {
         return $this->findById($id)
@@ -92,6 +121,8 @@ class BaseRepository implements BaseRepositoryInterface
     }
 
     /**
+     * @param  array<string, mixed>  $data
+     *
      * @throws \Throwable
      */
     public function update(int|string $id, array $data): Model
@@ -103,6 +134,10 @@ class BaseRepository implements BaseRepositoryInterface
         return $entity;
     }
 
+    /**
+     * @param  array<int, int|string>  $ids
+     * @param  array<string, mixed>  $data
+     */
     public function bulkUpdate(array $ids, array $data, string $primaryKey = 'id'): int
     {
         return $this->entity

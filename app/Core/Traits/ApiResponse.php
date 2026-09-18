@@ -12,6 +12,8 @@ trait ApiResponse
 {
     /**
      * Función que retorna una respuesta JSON exitosa
+     *
+     * @param  ResourceCollection|JsonResource|array<string, mixed>  $data
      */
     protected function successResponse(
         ResourceCollection|JsonResource|array $data,
@@ -22,6 +24,8 @@ trait ApiResponse
 
     /**
      * Función que retorna una respuesta JSON con contenido de algún archivo
+     *
+     * @param  array<string, string>  $headers
      */
     protected function fileResponse(string $pathFile, array $headers = []): BinaryFileResponse
     {
@@ -30,6 +34,8 @@ trait ApiResponse
 
     /**
      * Función que retorna una respuesta JSON errones
+     *
+     * @param  array<string, mixed>|string  $message
      */
     protected function errorResponse(array|string $message, int $code): JsonResponse
     {
