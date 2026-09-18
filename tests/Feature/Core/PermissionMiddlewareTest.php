@@ -5,6 +5,7 @@ namespace Tests\Feature\Core;
 use App\Http\Middleware\Permission;
 use App\Models\User;
 use Illuminate\Auth\Access\AuthorizationException;
+use Illuminate\Auth\AuthenticationException;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Tests\TestCase;
@@ -59,5 +60,12 @@ class PermissionMiddlewareTest extends TestCase
         $this->actAsUserWithRole(2);
 
         $this->assertSame('ok', $this->handle('1', '2', '3')->getContent());
+    }
+
+    public function test_unauthenticated_user_is_rejected_with_authentication_exception(): void
+    {
+        $this->expectException(AuthenticationException::class);
+
+        $this->handle(1);
     }
 }

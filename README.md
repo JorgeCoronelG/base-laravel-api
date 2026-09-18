@@ -39,7 +39,7 @@ Los puertos se pueden cambiar con `APP_PORT`, `PMA_PORT` y `DB_FORWARD_PORT` en 
 ```
 make test                        # ejecuta los tests (SQLite en memoria)
 make test ARGS=tests/Unit/Core   # solo un grupo de tests
-make stan                        # análisis estático (Larastan, nivel 5)
+make stan                        # análisis estático (Larastan, nivel 9)
 make lint                        # verifica el estilo (Pint) sin modificar
 make format                      # corrige el estilo con Pint
 make artisan cmd="route:list"    # cualquier comando de artisan

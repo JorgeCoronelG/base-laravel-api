@@ -99,7 +99,7 @@ abstract class GeneratesContractedClass extends GeneratorCommand
      */
     private function registerBinding(string $key, string $value): void
     {
-        $path = $this->laravel['path'].'/'.$this->providerPath();
+        $path = $this->laravel->path($this->providerPath());
         $pattern = '/(protected array \$'.$this->providerProperty().' = \[)(.*?)(\n    \];)/s';
 
         if (! $this->files->exists($path) || ! preg_match($pattern, $this->files->get($path), $match)) {

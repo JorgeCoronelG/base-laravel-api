@@ -2,10 +2,12 @@
 
 namespace App\Core\Classes;
 
+use App\Core\Enum\Message;
 use App\Core\Enum\QueryParam;
 use App\Exceptions\CustomErrorException;
 use App\Helpers\Validation;
 use Illuminate\Http\Request;
+use Symfony\Component\HttpFoundation\Response;
 
 /**
  * Parámetros de un listado (filtros, orden y tamaño de página) independientes de HTTP.
@@ -29,9 +31,29 @@ class ListQuery
     public static function fromRequest(Request $request): self
     {
         return new self(
-            Validation::getFilters($request->get(QueryParam::FILTERS_KEY)),
-            $request->get(QueryParam::ORDER_BY_KEY),
-            Validation::getPerPage($request->get(QueryParam::PAGINATION_KEY))
+            Validation::getFilters(self::stringParam($request, QueryParam::FILTERS_KEY)),
+            self::stringParam($request, QueryParam::ORDER_BY_KEY),
+            Validation::getPerPage(self::stringParam($request, QueryParam::PAGINATION_KEY))
         );
+    }
+
+    /**
+     * Un parámetro repetido como arreglo (?q[]=x) no es válido: se responde 400 en lugar de un TypeError.
+     *
+     * @throws CustomErrorException
+     */
+    private static function stringParam(Request $request, string $key): ?string
+    {
+        $value = $request->get($key);
+
+        if ($value === null) {
+            return null;
+        }
+
+        if (! is_string($value) && ! is_int($value)) {
+            throw new CustomErrorException(Message::INVALID_QUERY_PARAMETER, Response::HTTP_BAD_REQUEST);
+        }
+
+        return (string) $value;
     }
 }

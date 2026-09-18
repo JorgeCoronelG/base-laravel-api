@@ -6,6 +6,7 @@ use App\Core\Classes\ListQuery;
 use App\Core\Enum\OperatorSql;
 use App\Exceptions\CustomErrorException;
 use Illuminate\Http\Request;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 
 class ListQueryTest extends TestCase
@@ -50,5 +51,23 @@ class ListQueryTest extends TestCase
         $this->expectExceptionCode(400);
 
         ListQuery::fromRequest(Request::create('/items', 'GET', ['q' => 'no-es-json']));
+    }
+
+    #[DataProvider('arrayParams')]
+    public function test_from_request_with_array_params_is_bad_request(string $param): void
+    {
+        $this->expectException(CustomErrorException::class);
+        $this->expectExceptionCode(400);
+
+        ListQuery::fromRequest(Request::create('/items', 'GET', [$param => ['x']]));
+    }
+
+    public static function arrayParams(): array
+    {
+        return [
+            'filtros' => ['q'],
+            'orden' => ['sort'],
+            'tamaño de página' => ['per_page'],
+        ];
     }
 }

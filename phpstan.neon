@@ -4,7 +4,7 @@ includes:
 parameters:
     paths:
         - app
-    level: 6
+    level: 9
 
     ignoreErrors:
         # BaseRepository asume que los modelos usan los traits AdvancedFilter y Sortable

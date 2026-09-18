@@ -44,9 +44,12 @@ class BaseRepository implements BaseRepositoryInterface
      */
     public function bulkDelete(array $ids, string $primaryKey = 'id'): int
     {
-        return $this->entity
+        /** @var int $deleted Filas eliminadas (o marcadas, con SoftDeletes) */
+        $deleted = $this->entity
             ->whereIn($primaryKey, $ids)
             ->delete();
+
+        return $deleted;
     }
 
     /**
