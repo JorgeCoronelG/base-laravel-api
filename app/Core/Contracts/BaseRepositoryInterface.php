@@ -12,10 +12,10 @@ interface BaseRepositoryInterface
 
     public function bulkDelete(array $ids, string $primaryKey = 'id'): bool;
 
-    public function findAll(array $filter = [], string $sort = null, array $columns = ['*']):
+    public function findAll(array $filter = [], ?string $sort = null, array $columns = ['*']):
     \Illuminate\Database\Eloquent\Collection;
 
-    public function findAllPaginated(array $filters, int $limit, string $sort = null, array $columns = ['*']):
+    public function findAllPaginated(array $filters, int $limit, ?string $sort = null, array $columns = ['*']):
     \Illuminate\Pagination\LengthAwarePaginator;
 
     public function findById(int $id, array $columns = ['*']): \Illuminate\Database\Eloquent\Model;

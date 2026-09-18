@@ -12,7 +12,7 @@ use Symfony\Component\HttpFoundation\Response;
 
 class Validation
 {
-    public static function getPerPage(string $queryParam = null): int
+    public static function getPerPage(?string $queryParam = null): int
     {
         if (is_null($queryParam)) {
             return QueryParam::PAGINATION_ITEMS_DEFAULT;
@@ -25,7 +25,7 @@ class Validation
      * @throws CustomErrorException
      * @return Filter[]
      */
-    public static function getFilters(string $queryParam = null): array
+    public static function getFilters(?string $queryParam = null): array
     {
         if (is_null($queryParam)) {
             return [];
@@ -61,7 +61,7 @@ class Validation
      * Función para validar una fecha en formato AAAA/MM/DD
      * @throws CustomErrorException
      */
-    public static function validateDate(string $date = null): string | null
+    public static function validateDate(?string $date = null): string | null
     {
         if (is_null($date)) {
             throw new CustomErrorException(Message::INVALID_QUERY_PARAMETER, Response::HTTP_BAD_REQUEST);

@@ -42,7 +42,7 @@ class BaseRepository implements BaseRepositoryInterface
 
     public function findAll(
         array $filter = [],
-        string $sort = null,
+        ?string $sort = null,
         array $columns = ['*']
     ): Collection {
         return $this->entity
@@ -54,7 +54,7 @@ class BaseRepository implements BaseRepositoryInterface
     public function findAllPaginated(
         array $filters,
         int $limit,
-        string $sort = null,
+        ?string $sort = null,
         array $columns = ['*']
     ): \Illuminate\Pagination\LengthAwarePaginator {
         return $this->entity

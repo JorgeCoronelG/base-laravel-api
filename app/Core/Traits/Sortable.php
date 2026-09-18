@@ -12,7 +12,7 @@ trait Sortable
     /**
      * @throws CustomErrorException
      */
-    public function scopeApplySort(Builder $query, string $sort = null): Builder
+    public function scopeApplySort(Builder $query, ?string $sort = null): Builder
     {
         if (!property_exists($this, 'allowedSorts')) {
             throw new CustomErrorException(Message::getMessageHasNotAllowedSorts(get_class($this)), Response::HTTP_INTERNAL_SERVER_ERROR);

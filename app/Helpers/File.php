@@ -24,28 +24,28 @@ class File
         Storage::delete(self::getFileStoragePath($path, $filename));
     }
 
-    public static function getFilePublicPath(string $path, string $filename = null): string
+    public static function getFilePublicPath(string $path, ?string $filename = null): string
     {
         return (!is_null($filename))
             ? public_path(Path::STORAGE->value.$path.$filename)
             : public_path(Path::STORAGE->value.$path);
     }
 
-    public static function getFileStoragePath(string $path, string $filename = null): string
+    public static function getFileStoragePath(string $path, ?string $filename = null): string
     {
         return (!is_null($filename))
             ? Path::STORAGE_PUBLIC->value.$path.$filename
             : Path::STORAGE_PUBLIC->value.$path;
     }
 
-    public static function getExposedPath(string $path, string $filename = null): string
+    public static function getExposedPath(string $path, ?string $filename = null): string
     {
         return (!is_null($filename))
             ? Path::STORAGE->value.$path.$filename
             : Path::STORAGE->value.$path;
     }
 
-    public static function storagePath(string $path, string $filename = null): string
+    public static function storagePath(string $path, ?string $filename = null): string
     {
         return (!is_null($filename))
             ? storage_path('app/public/').$path.$filename

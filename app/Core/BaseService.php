@@ -29,7 +29,7 @@ class BaseService implements BaseServiceInterface
 
     public function findAll(
         array $filter = [],
-        string $sort = null,
+        ?string $sort = null,
         array $columns = ['*']
     ): Collection {
         return $this->entityRepository->findAll($filter, $sort, $columns);
