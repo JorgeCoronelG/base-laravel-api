@@ -34,23 +34,34 @@ class Validation
         $json = urldecode($queryParam);
         $filters = json_decode($json, true);
 
-        if (!isset($filters[QueryParam::FILTERS_FIELD_KEY])) {
-            throw new CustomErrorException(Message::INVALID_QUERY_PARAMETER,Response::HTTP_BAD_REQUEST);
+        if (!is_array($filters) || !is_array($filters[QueryParam::FILTERS_FIELD_KEY] ?? null)) {
+            throw new CustomErrorException(Message::INVALID_QUERY_PARAMETER, Response::HTTP_BAD_REQUEST);
         }
 
         $arrayFilters = [];
         foreach ($filters[QueryParam::FILTERS_FIELD_KEY] as $filter) {
             if (
-                !isset($filter[QueryParam::FIELD_KEY]) ||
-                !isset($filter[QueryParam::OPERATOR_SQL_KEY])
+                !is_array($filter) ||
+                !is_string($filter[QueryParam::FIELD_KEY] ?? null) ||
+                !is_string($filter[QueryParam::OPERATOR_SQL_KEY] ?? null) ||
+                !is_string($filter[QueryParam::BOOLEAN_KEY] ?? 'and')
             ) {
                 throw new CustomErrorException(Message::INVALID_QUERY_PARAMETER, Response::HTTP_BAD_REQUEST);
             }
 
+            $operator = OperatorSql::tryFrom($filter[QueryParam::OPERATOR_SQL_KEY]);
+            $boolean = strtolower($filter[QueryParam::BOOLEAN_KEY] ?? 'and');
+
+            if (is_null($operator) || !in_array($boolean, ['and', 'or'], true)) {
+                throw new CustomErrorException(Message::INVALID_QUERY_PARAMETER, Response::HTTP_BAD_REQUEST);
+            }
+
+            // IS NULL / IS NOT NULL no necesitan valor.
             $arrayFilters[] = new Filter(
                 $filter[QueryParam::FIELD_KEY],
-                $filter[QueryParam::VALUE_KEY],
-                OperatorSql::from($filter[QueryParam::OPERATOR_SQL_KEY])
+                $filter[QueryParam::VALUE_KEY] ?? null,
+                $operator,
+                $boolean
             );
         }
 

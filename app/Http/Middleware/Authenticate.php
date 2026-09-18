@@ -3,7 +3,7 @@
 namespace App\Http\Middleware;
 
 use App\Core\Traits\ApiResponse;
-use App\Helpers\Enum\Message;
+use App\Core\Enum\Message;
 use Illuminate\Auth\Middleware\Authenticate as Middleware;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;

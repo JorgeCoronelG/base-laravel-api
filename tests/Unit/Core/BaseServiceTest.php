@@ -5,6 +5,7 @@ namespace Tests\Unit\Core;
 use Illuminate\Http\Request;
 use Tests\Support\CreatesItemsTable;
 use Tests\Support\ItemData;
+use Tests\Support\ItemPatchData;
 use Tests\Support\ItemRepository;
 use Tests\Support\ItemService;
 use Tests\TestCase;
@@ -38,14 +39,36 @@ class BaseServiceTest extends TestCase
         $this->assertDatabaseHas('items', ['id' => $item->id, 'name' => 'Ana María', 'status' => 2]);
     }
 
-    public function test_bug_update_overwrites_unsent_fields_with_null(): void
+    public function test_update_with_regular_dto_writes_null_for_nullable_fields(): void
     {
-        // BUG: Data::toArray() incluye los campos no enviados como null y pisan lo guardado.
+        // Un DTO con "?int $status" siempre incluye status en toArray(): null = "poner null".
         $item = $this->service->create(new ItemData('Ana', 5));
 
         $this->service->update($item->id, new ItemData(name: 'Nuevo', status: null));
 
         $this->assertNull($item->fresh()->status);
+    }
+
+    public function test_partial_update_does_not_overwrite_unsent_fields_when_dto_uses_optional(): void
+    {
+        $item = $this->service->create(new ItemData('Ana', 5));
+
+        $this->service->update($item->id, ItemPatchData::from(['name' => 'Nuevo']));
+
+        $item = $item->fresh();
+        $this->assertSame('Nuevo', $item->name);
+        $this->assertSame(5, $item->status);
+    }
+
+    public function test_partial_update_can_explicitly_set_null_with_optional_dto(): void
+    {
+        $item = $this->service->create(new ItemData('Ana', 5));
+
+        $this->service->update($item->id, ItemPatchData::from(['status' => null]));
+
+        $item = $item->fresh();
+        $this->assertSame('Ana', $item->name);
+        $this->assertNull($item->status);
     }
 
     public function test_delete_and_find_by_id(): void

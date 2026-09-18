@@ -5,7 +5,7 @@ namespace App\Core;
 use App\Core\Contracts\BaseRepositoryInterface;
 use App\Core\Contracts\BaseServiceInterface;
 use App\Exceptions\CustomErrorException;
-use App\Helpers\Enum\QueryParam;
+use App\Core\Enum\QueryParam;
 use App\Helpers\Validation;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;

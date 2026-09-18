@@ -3,14 +3,12 @@
 namespace App\Core;
 
 use App\Core\Contracts\BaseRepositoryInterface;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Query\Builder as QueryBuilder;
 
 class BaseRepository implements BaseRepositoryInterface
 {
-    protected Builder|Model|QueryBuilder $entity;
+    protected Model $entity;
 
     /**
      * @throws \Throwable
@@ -33,7 +31,7 @@ class BaseRepository implements BaseRepositoryInterface
         $entity->delete();
     }
 
-    public function bulkDelete(array $ids, string $primaryKey = 'id'): bool
+    public function bulkDelete(array $ids, string $primaryKey = 'id'): int
     {
         return $this->entity
             ->whereIn($primaryKey, $ids)
@@ -73,7 +71,7 @@ class BaseRepository implements BaseRepositoryInterface
         return $this->entity
             ->inRandomOrder()
             ->limit(1)
-            ->first();
+            ->firstOrFail();
     }
 
     public function findRandoms(int $records = 1): Collection

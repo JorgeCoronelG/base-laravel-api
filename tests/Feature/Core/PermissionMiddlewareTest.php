@@ -45,12 +45,18 @@ class PermissionMiddlewareTest extends TestCase
         $this->handle(1);
     }
 
-    public function test_bug_denies_matching_role_when_parameter_is_string(): void
+    public function test_allows_when_parameter_is_string_as_in_real_routes(): void
     {
-        // BUG: los parámetros de middleware ("permission:1") llegan como string y se compara con ===.
+        // Los parámetros de middleware ("permission:1") llegan como string.
         $this->actAsUserWithRole(1);
 
-        $this->expectException(AuthorizationException::class);
-        $this->handle('1');
+        $this->assertSame('ok', $this->handle('1')->getContent());
+    }
+
+    public function test_allows_when_role_is_any_of_several_parameters(): void
+    {
+        $this->actAsUserWithRole(2);
+
+        $this->assertSame('ok', $this->handle('1', '2', '3')->getContent());
     }
 }

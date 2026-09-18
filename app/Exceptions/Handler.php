@@ -3,7 +3,7 @@
 namespace App\Exceptions;
 
 use App\Core\Traits\ApiResponse;
-use App\Helpers\Enum\Message;
+use App\Core\Enum\Message;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Database\QueryException;

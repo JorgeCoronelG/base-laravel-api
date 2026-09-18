@@ -17,16 +17,10 @@ class Permission
      */
     public function handle(Request $request, Closure $next, ...$roleIds): Response
     {
-        $hasPermission = false;
-        $roleId = auth()->user()->role->id;
-        foreach ($roleIds as $id) {
-            if ($roleId === $id) {
-                $hasPermission = true;
-                break;
-            }
-        }
+        // Los parámetros de middleware (permission:1,2) llegan como string, por eso se compara como string.
+        $roleId = (string) auth()->user()->role->id;
 
-        if (!$hasPermission) {
+        if (!in_array($roleId, array_map('strval', $roleIds), true)) {
             throw new AuthorizationException();
         }
 

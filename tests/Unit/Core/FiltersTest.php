@@ -6,11 +6,10 @@ use App\Core\Classes\Filter;
 use App\Core\Enum\OperatorSql;
 use App\Exceptions\CustomErrorException;
 use App\Helpers\Validation;
-use ErrorException;
 use Tests\Support\CreatesItemsTable;
 use Tests\Support\Item;
+use Tests\Support\ItemWithoutSorts;
 use Tests\TestCase;
-use ValueError;
 
 /**
  * Caracterización de Validation::getFilters y del scope AdvancedFilter.
@@ -65,20 +64,47 @@ class FiltersTest extends TestCase
         Validation::getFilters(json_encode(['filters' => [['field' => 'name']]]));
     }
 
-    public function test_get_filters_with_unknown_operator_throws_value_error(): void
+    public function test_get_filters_with_unknown_operator_is_bad_request(): void
     {
-        // Comportamiento actual: no se traduce a 400, escapa como ValueError (500).
-        $this->expectException(ValueError::class);
+        $this->expectException(CustomErrorException::class);
+        $this->expectExceptionCode(400);
 
         Validation::getFilters(json_encode(['filters' => [['field' => 'name', 'value' => 'a', 'operator' => 'nope']]]));
     }
 
-    public function test_bug_get_filters_without_value_key_fails_even_for_is_null(): void
+    public function test_get_filters_with_non_string_field_is_bad_request(): void
     {
-        // BUG: IS NULL / IS NOT NULL no necesitan valor, pero se exige la clave "value".
-        $this->expectException(ErrorException::class);
+        $this->expectException(CustomErrorException::class);
+        $this->expectExceptionCode(400);
 
-        Validation::getFilters(json_encode(['filters' => [['field' => 'status', 'operator' => 'IS NULL']]]));
+        Validation::getFilters(json_encode(['filters' => [['field' => ['x'], 'value' => 'a', 'operator' => '=']]]));
+    }
+
+    public function test_get_filters_with_invalid_boolean_is_bad_request(): void
+    {
+        $this->expectException(CustomErrorException::class);
+        $this->expectExceptionCode(400);
+
+        Validation::getFilters(json_encode(['filters' => [['field' => 'name', 'value' => 'a', 'operator' => '=', 'boolean' => 'xor']]]));
+    }
+
+    public function test_get_filters_accepts_is_null_without_value(): void
+    {
+        $filters = Validation::getFilters(json_encode(['filters' => [['field' => 'status', 'operator' => 'IS NULL']]]));
+
+        $this->assertNull($filters[0]->value);
+        $this->assertSame(OperatorSql::IS_NULL, $filters[0]->operator);
+    }
+
+    public function test_get_filters_boolean_defaults_to_and_and_accepts_or(): void
+    {
+        $filters = Validation::getFilters(json_encode(['filters' => [
+            ['field' => 'name', 'value' => 'a', 'operator' => '='],
+            ['field' => 'name', 'value' => 'b', 'operator' => '=', 'boolean' => 'OR'],
+        ]]));
+
+        $this->assertSame('and', $filters[0]->boolean);
+        $this->assertSame('or', $filters[1]->boolean);
     }
 
     // ---- AdvancedFilter ----
@@ -97,33 +123,62 @@ class FiltersTest extends TestCase
         $this->assertSame(['Ana', 'Beto', 'Carlos'], $this->names([new Filter('status', null, OperatorSql::NOT_NULL)]));
     }
 
-    public function test_bug_multiple_filters_are_combined_with_or(): void
+    public function test_multiple_filters_are_combined_with_and_by_default(): void
     {
-        // BUG: name = Ana AND status = 0 no devuelve nada; con OR devuelve Ana y Beto.
-        $result = $this->names([
+        $this->assertSame([], $this->names([
             new Filter('name', 'Ana', OperatorSql::EQUAL),
             new Filter('status', 0, OperatorSql::EQUAL),
+        ]));
+
+        $this->assertSame(['Ana'], $this->names([
+            new Filter('name', 'Ana', OperatorSql::EQUAL),
+            new Filter('status', 1, OperatorSql::EQUAL),
+        ]));
+    }
+
+    public function test_filters_can_be_combined_with_or(): void
+    {
+        $result = $this->names([
+            new Filter('name', 'Ana', OperatorSql::EQUAL),
+            new Filter('status', 0, OperatorSql::EQUAL, 'or'),
         ]);
 
         $this->assertSame(['Ana', 'Beto'], $result);
     }
 
-    public function test_bug_or_filter_is_not_grouped_and_escapes_other_constraints(): void
+    public function test_or_filters_are_grouped_and_do_not_escape_other_constraints(): void
     {
-        // BUG: orWhere sin agrupar rompe cualquier where previo (scopes globales, soft deletes, tenant...).
-        $result = Item::where('status', 0)
-            ->filter([new Filter('name', 'Ana', OperatorSql::EQUAL)])
+        // status = 1 AND (name = Beto OR name = Carlos) => solo Carlos.
+        $result = Item::where('status', 1)
+            ->filter([
+                new Filter('name', 'Beto', OperatorSql::EQUAL),
+                new Filter('name', 'Carlos', OperatorSql::EQUAL, 'or'),
+            ])
             ->orderBy('id')
             ->pluck('name')
             ->all();
 
-        $this->assertSame(['Ana', 'Beto'], $result); // Ana tiene status = 1 y aun así aparece.
+        $this->assertSame(['Carlos'], $result);
     }
 
-    public function test_bug_any_column_can_be_filtered(): void
+    public function test_field_outside_whitelist_is_bad_request(): void
     {
-        // BUG: no existe whitelist de campos filtrables (a diferencia de allowedSorts).
-        $this->assertSame(['Ana'], $this->names([new Filter('id', 1, OperatorSql::EQUAL)]));
-        $this->assertSame(['Carlos'], $this->names([new Filter('id', 3, OperatorSql::EQUAL)]));
+        $this->expectException(CustomErrorException::class);
+        $this->expectExceptionCode(400);
+
+        Item::filter([new Filter('created_at', null, OperatorSql::NOT_NULL)])->get();
+    }
+
+    public function test_model_without_allowed_filters_fails_when_filters_are_requested(): void
+    {
+        $this->expectException(CustomErrorException::class);
+        $this->expectExceptionCode(500);
+
+        ItemWithoutSorts::filter([new Filter('name', 'Ana', OperatorSql::EQUAL)])->get();
+    }
+
+    public function test_model_without_allowed_filters_works_when_no_filters_requested(): void
+    {
+        $this->assertCount(3, ItemWithoutSorts::filter([])->get());
     }
 }

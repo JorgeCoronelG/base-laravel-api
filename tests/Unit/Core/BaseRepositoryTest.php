@@ -9,8 +9,7 @@ use Tests\Support\ItemRepository;
 use Tests\TestCase;
 
 /**
- * Tests de caracterización: fijan el comportamiento ACTUAL de BaseRepository,
- * incluidos los comportamientos que se consideran bugs (marcados con "BUG:").
+ * Tests del contrato de BaseRepository.
  */
 class BaseRepositoryTest extends TestCase
 {
@@ -112,10 +111,9 @@ class BaseRepositoryTest extends TestCase
         $this->assertCount(2, $this->repository->findRandoms(2));
     }
 
-    public function test_bug_find_random_on_empty_table_throws_type_error(): void
+    public function test_find_random_on_empty_table_throws_model_not_found(): void
     {
-        // BUG: el tipo de retorno es Model pero first() devuelve null.
-        $this->expectException(\TypeError::class);
+        $this->expectException(ModelNotFoundException::class);
 
         $this->repository->findRandom();
     }
@@ -143,12 +141,11 @@ class BaseRepositoryTest extends TestCase
         $this->assertSame(2, Item::where('status', 9)->count());
     }
 
-    public function test_bulk_delete_returns_true_and_deletes(): void
+    public function test_bulk_delete_returns_deleted_rows_and_deletes(): void
     {
         $this->seedItems();
 
-        // El tipo declarado es bool aunque delete() devuelve int (se coacciona).
-        $this->assertTrue($this->repository->bulkDelete([1, 2]));
+        $this->assertSame(2, $this->repository->bulkDelete([1, 2]));
         $this->assertDatabaseCount('items', 1);
     }
 }

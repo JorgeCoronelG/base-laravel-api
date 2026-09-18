@@ -14,12 +14,12 @@ trait Sortable
      */
     public function scopeApplySort(Builder $query, ?string $sort = null): Builder
     {
-        if (!property_exists($this, 'allowedSorts')) {
-            throw new CustomErrorException(Message::getMessageHasNotAllowedSorts(get_class($this)), Response::HTTP_INTERNAL_SERVER_ERROR);
-        }
-
         if (is_null($sort)) {
             return $query;
+        }
+
+        if (!property_exists($this, 'allowedSorts')) {
+            throw new CustomErrorException(Message::getMessageHasNotAllowedSorts(get_class($this)), Response::HTTP_INTERNAL_SERVER_ERROR);
         }
 
         $sortFields = explode(',', $sort);

@@ -10,7 +10,7 @@ interface BaseRepositoryInterface
 
     public function delete(int $id): void;
 
-    public function bulkDelete(array $ids, string $primaryKey = 'id'): bool;
+    public function bulkDelete(array $ids, string $primaryKey = 'id'): int;
 
     public function findAll(array $filter = [], ?string $sort = null, array $columns = ['*']):
     \Illuminate\Database\Eloquent\Collection;

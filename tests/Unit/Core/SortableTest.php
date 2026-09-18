@@ -46,12 +46,16 @@ class SortableTest extends TestCase
         Item::applySort('created_at')->get();
     }
 
-    public function test_bug_model_without_allowed_sorts_fails_even_when_no_sort_requested(): void
+    public function test_model_without_allowed_sorts_works_when_no_sort_requested(): void
     {
-        // BUG: la validación de allowedSorts va antes del is_null($sort).
+        $this->assertCount(3, ItemWithoutSorts::applySort(null)->get());
+    }
+
+    public function test_model_without_allowed_sorts_fails_when_a_sort_is_requested(): void
+    {
         $this->expectException(CustomErrorException::class);
         $this->expectExceptionCode(500);
 
-        ItemWithoutSorts::applySort(null)->get();
+        ItemWithoutSorts::applySort('name')->get();
     }
 }

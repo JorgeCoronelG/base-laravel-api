@@ -3,69 +3,63 @@
 namespace App\Core\Traits;
 
 use App\Core\Classes\Filter;
+use App\Core\Enum\Message;
 use App\Core\Enum\OperatorSql;
+use App\Exceptions\CustomErrorException;
 use Illuminate\Database\Eloquent\Builder;
+use Symfony\Component\HttpFoundation\Response;
 
 trait AdvancedFilter
 {
     /**
+     * Aplica los filtros agrupados en un solo paréntesis para no romper otros wheres
+     * o scopes globales de la consulta. Entre sí se unen con AND, salvo que el filtro indique 'or'.
+     * Solo se pueden filtrar los campos de la propiedad pública allowedFilters del modelo.
+     *
      * @param Builder $query
      * @param Filter[] $filters
      * @return Builder
+     * @throws CustomErrorException
      */
     public function scopeFilter(Builder $query, array $filters = []): Builder
     {
-        foreach ($filters as $filter) {
-            $this->filterAdvanced($query, $filter);
+        if (empty($filters)) {
+            return $query;
         }
 
-        return $query;
+        if (!property_exists($this, 'allowedFilters')) {
+            throw new CustomErrorException(
+                Message::getMessageHasNotAllowedFilters(get_class($this)),
+                Response::HTTP_INTERNAL_SERVER_ERROR
+            );
+        }
+
+        foreach ($filters as $filter) {
+            if (!in_array($filter->field, $this->allowedFilters, true)) {
+                throw new CustomErrorException(Message::INVALID_QUERY_PARAMETER, Response::HTTP_BAD_REQUEST);
+            }
+        }
+
+        return $query->where(function (Builder $group) use ($filters) {
+            foreach ($filters as $filter) {
+                $this->filterAdvanced($group, $filter);
+            }
+        });
     }
 
-    private function filterAdvanced(Builder $query, Filter $filter): Builder
+    private function filterAdvanced(Builder $query, Filter $filter): void
     {
-        if (OperatorSql::CONTAIN === $filter->operator) {
-            $query->orWhere($filter->field, 'LIKE', "%$filter->value%");
-            return $query;
-        }
+        $field = $filter->field;
+        $boolean = $filter->boolean;
 
-        if (OperatorSql::NOT_CONTAIN === $filter->operator) {
-            $query->orWhere($filter->field, 'NOT LIKE', "%$filter->value%");
-            return $query;
-        }
-
-        if (OperatorSql::STARTS_WITH === $filter->operator) {
-            $query->orWhere($filter->field, 'LIKE', "$filter->value%");
-            return $query;
-        }
-
-        if (OperatorSql::ENDS_WITH === $filter->operator) {
-            $query->orWhere($filter->field, 'LIKE', "%$filter->value");
-            return $query;
-        }
-
-        if (OperatorSql::IS_NULL === $filter->operator) {
-            $query->orWhereNull($filter->field);
-            return $query;
-        }
-
-        if (OperatorSql::NOT_NULL === $filter->operator) {
-            $query->orWhereNotNull($filter->field);
-            return $query;
-        }
-
-        if (
-            OperatorSql::EQUAL === $filter->operator ||
-            OperatorSql::NOT_EQUAL === $filter->operator ||
-            OperatorSql::GREATER_THAN === $filter->operator ||
-            OperatorSql::GREATER_THAN_OR_EQUAL === $filter->operator ||
-            OperatorSql::LESS_THAN === $filter->operator ||
-            OperatorSql::LESS_THAN_OR_EQUAL === $filter->operator
-        ) {
-            $query->orWhere($filter->field, $filter->operator->value, $filter->value);
-            return $query;
-        }
-
-        return $query;
+        match ($filter->operator) {
+            OperatorSql::CONTAIN => $query->where($field, 'LIKE', "%$filter->value%", $boolean),
+            OperatorSql::NOT_CONTAIN => $query->where($field, 'NOT LIKE', "%$filter->value%", $boolean),
+            OperatorSql::STARTS_WITH => $query->where($field, 'LIKE', "$filter->value%", $boolean),
+            OperatorSql::ENDS_WITH => $query->where($field, 'LIKE', "%$filter->value", $boolean),
+            OperatorSql::IS_NULL => $query->whereNull($field, $boolean),
+            OperatorSql::NOT_NULL => $query->whereNotNull($field, $boolean),
+            default => $query->where($field, $filter->operator->value, $filter->value, $boolean),
+        };
     }
 }

@@ -18,4 +18,5 @@ class QueryParam
     const FIELD_KEY = 'field';
     const VALUE_KEY = 'value';
     const OPERATOR_SQL_KEY = 'operator';
+    const BOOLEAN_KEY = 'boolean';
 }

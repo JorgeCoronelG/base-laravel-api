@@ -50,3 +50,36 @@ make help                        # lista todos los comandos
 1. Crear la interfaz en `app/Contracts/Repositories` o `app/Contracts/Services`.
 2. Crear la implementación en `app/Repositories` o `app/Services`, extendiendo `BaseRepository` o `BaseService`.
 3. Registrar la pareja interfaz => implementación en `RepositoryServiceProvider` o `ServiceLogicServiceProvider`.
+
+## Filtros y ordenamiento
+
+Cada modelo que use los traits `AdvancedFilter` y `Sortable` declara qué campos se pueden filtrar y ordenar:
+
+```php
+public array $allowedFilters = ['id', 'name', 'status'];
+public array $allowedSorts = ['id', 'name', 'status'];
+```
+
+Un campo fuera de la lista responde `400`. Si el modelo no declara la propiedad y se pide filtrar u ordenar, responde `500` con un mensaje que indica cuál falta.
+
+Los filtros se envían en el parámetro `q` (JSON) y por defecto se combinan con AND. Para usar OR en un filtro se indica `"boolean": "or"`:
+
+```json
+{"filters": [
+  {"field": "status", "operator": "=", "value": 1},
+  {"field": "name", "operator": "%LIKE%", "value": "ana", "boolean": "or"}
+]}
+```
+
+`IS NULL` e `IS NOT NULL` no necesitan `value`.
+
+## Actualizaciones parciales (PATCH)
+
+`BaseService::update` guarda todo lo que devuelve `Data::toArray()`. Para que un campo no enviado no se sobrescriba, decláralo como `Optional` en el DTO:
+
+```php
+public function __construct(
+    public string|Optional $name,
+    public int|null|Optional $status,
+) {}
+```

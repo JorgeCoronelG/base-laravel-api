@@ -23,4 +23,9 @@ class Message
     {
         return "Establezca la propiedad pública allowedSorts dentro de $class";
     }
+
+    public static function getMessageHasNotAllowedFilters(string $class): string
+    {
+        return "Establezca la propiedad pública allowedFilters dentro de $class";
+    }
 }
