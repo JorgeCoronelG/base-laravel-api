@@ -8,7 +8,9 @@ use Illuminate\Database\Eloquent\Model;
 
 class BaseRepository implements BaseRepositoryInterface
 {
-    protected Model $entity;
+    public function __construct(protected Model $entity)
+    {
+    }
 
     /**
      * @throws \Throwable
@@ -25,7 +27,7 @@ class BaseRepository implements BaseRepositoryInterface
         return $this->entity->insert($data);
     }
 
-    public function delete(int $id): void
+    public function delete(int|string $id): void
     {
         $entity = $this->findById($id);
         $entity->delete();
@@ -61,7 +63,7 @@ class BaseRepository implements BaseRepositoryInterface
             ->paginate($limit, $columns);
     }
 
-    public function findById(int $id, array $columns = ['*']): Model
+    public function findById(int|string $id, array $columns = ['*']): Model
     {
         return $this->entity->findOrFail($id, $columns);
     }
@@ -82,7 +84,7 @@ class BaseRepository implements BaseRepositoryInterface
             ->get();
     }
 
-    public function sync(int $id, string $relation, array $attributes, bool $detaching = true): array
+    public function sync(int|string $id, string $relation, array $attributes, bool $detaching = true): array
     {
         return $this->findById($id)
             ->{$relation}()
@@ -92,7 +94,7 @@ class BaseRepository implements BaseRepositoryInterface
     /**
      * @throws \Throwable
      */
-    public function update(int $id, array $data): Model
+    public function update(int|string $id, array $data): Model
     {
         $entity = $this->findById($id);
         $entity->fill($data);

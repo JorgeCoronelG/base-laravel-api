@@ -9,6 +9,6 @@ class ItemService extends BaseService
 {
     public function __construct(BaseRepositoryInterface $entityRepository)
     {
-        $this->entityRepository = $entityRepository;
+        parent::__construct($entityRepository);
     }
 }

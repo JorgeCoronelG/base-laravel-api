@@ -17,6 +17,15 @@ trait CreatesItemsTable
         });
     }
 
+    protected function createUuidItemsTable(): void
+    {
+        Schema::create('uuid_items', function (Blueprint $table) {
+            $table->uuid('id')->primary();
+            $table->string('name');
+            $table->timestamps();
+        });
+    }
+
     protected function seedItems(): void
     {
         Item::create(['name' => 'Ana', 'status' => 1]);

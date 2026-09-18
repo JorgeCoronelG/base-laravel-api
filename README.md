@@ -47,9 +47,40 @@ make help                        # lista todos los comandos
 
 ## Cómo crear un repositorio y un servicio
 
-1. Crear la interfaz en `app/Contracts/Repositories` o `app/Contracts/Services`.
-2. Crear la implementación en `app/Repositories` o `app/Services`, extendiendo `BaseRepository` o `BaseService`.
+1. Crear la interfaz en `app/Contracts/Repositories` o `app/Contracts/Services`. Puede extender `BaseRepositoryInterface` / `BaseServiceInterface`, o solo las partes que se necesiten (`ReadableRepositoryInterface`, `WritableRepositoryInterface`, `BulkRepositoryInterface`, `RelationSyncRepositoryInterface`).
+2. Crear la implementación en `app/Repositories` o `app/Services`, extendiendo `BaseRepository` o `BaseService` y pasando la dependencia al constructor padre:
+
+```php
+class ProductRepository extends BaseRepository implements ProductRepositoryInterface
+{
+    public function __construct(Product $entity)
+    {
+        parent::__construct($entity);
+    }
+}
+
+class ProductService extends BaseService implements ProductServiceInterface
+{
+    public function __construct(ProductRepositoryInterface $repository)
+    {
+        parent::__construct($repository);
+    }
+}
+```
+
 3. Registrar la pareja interfaz => implementación en `RepositoryServiceProvider` o `ServiceLogicServiceProvider`.
+
+Los ids pueden ser `int` o `string` (UUID/ULID).
+
+## Listados en el controller
+
+El servicio no conoce `Request`. El controller arma un `ListQuery` (filtros, orden y tamaño de página) y se lo pasa:
+
+```php
+$products = $this->service->findAllPaginated(ListQuery::fromRequest($request));
+```
+
+Desde un job o un comando se puede construir directamente: `new ListQuery($filters, '-name', 20)`.
 
 ## Filtros y ordenamiento
 

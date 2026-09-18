@@ -2,10 +2,17 @@
 
 namespace Tests\Unit\Core;
 
+use App\Core\BaseRepository;
+use App\Core\Contracts\BaseRepositoryInterface;
+use App\Core\Contracts\BulkRepositoryInterface;
+use App\Core\Contracts\ReadableRepositoryInterface;
+use App\Core\Contracts\RelationSyncRepositoryInterface;
+use App\Core\Contracts\WritableRepositoryInterface;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Tests\Support\CreatesItemsTable;
 use Tests\Support\Item;
 use Tests\Support\ItemRepository;
+use Tests\Support\UuidItem;
 use Tests\TestCase;
 
 /**
@@ -147,5 +154,29 @@ class BaseRepositoryTest extends TestCase
 
         $this->assertSame(2, $this->repository->bulkDelete([1, 2]));
         $this->assertDatabaseCount('items', 1);
+    }
+
+    public function test_ids_can_be_uuid_strings(): void
+    {
+        $this->createUuidItemsTable();
+        $repository = new BaseRepository(new UuidItem());
+
+        $item = $repository->create(['name' => 'Ana']);
+        $this->assertIsString($item->id);
+
+        $this->assertSame('Ana', $repository->findById($item->id)->name);
+        $this->assertSame('Beto', $repository->update($item->id, ['name' => 'Beto'])->name);
+
+        $repository->delete($item->id);
+        $this->assertDatabaseCount('uuid_items', 0);
+    }
+
+    public function test_base_repository_implements_the_split_contracts(): void
+    {
+        $this->assertInstanceOf(BaseRepositoryInterface::class, $this->repository);
+        $this->assertInstanceOf(ReadableRepositoryInterface::class, $this->repository);
+        $this->assertInstanceOf(WritableRepositoryInterface::class, $this->repository);
+        $this->assertInstanceOf(BulkRepositoryInterface::class, $this->repository);
+        $this->assertInstanceOf(RelationSyncRepositoryInterface::class, $this->repository);
     }
 }

@@ -2,7 +2,9 @@
 
 namespace Tests\Unit\Core;
 
-use Illuminate\Http\Request;
+use App\Core\Classes\Filter;
+use App\Core\Classes\ListQuery;
+use App\Core\Enum\OperatorSql;
 use Tests\Support\CreatesItemsTable;
 use Tests\Support\ItemData;
 use Tests\Support\ItemPatchData;
@@ -81,18 +83,15 @@ class BaseServiceTest extends TestCase
         $this->assertDatabaseCount('items', 0);
     }
 
-    public function test_find_all_paginated_reads_query_params_from_request(): void
+    public function test_find_all_paginated_with_list_query(): void
     {
         $this->seedItems();
-        $filters = json_encode(['filters' => [['field' => 'status', 'value' => 1, 'operator' => '=']]]);
 
-        $request = Request::create('/items', 'GET', [
-            'q' => $filters,
-            'per_page' => 1,
-            'sort' => '-name',
-        ]);
-
-        $page = $this->service->findAllPaginated($request);
+        $page = $this->service->findAllPaginated(new ListQuery(
+            [new Filter('status', 1, OperatorSql::EQUAL)],
+            '-name',
+            1
+        ));
 
         $this->assertSame(2, $page->total());
         $this->assertSame(1, $page->perPage());
@@ -103,7 +102,7 @@ class BaseServiceTest extends TestCase
     {
         $this->seedItems();
 
-        $page = $this->service->findAllPaginated(Request::create('/items'));
+        $page = $this->service->findAllPaginated(new ListQuery());
 
         $this->assertSame(5, $page->perPage());
     }

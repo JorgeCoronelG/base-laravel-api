@@ -2,27 +2,26 @@
 
 namespace App\Core;
 
+use App\Core\Classes\ListQuery;
 use App\Core\Contracts\BaseRepositoryInterface;
 use App\Core\Contracts\BaseServiceInterface;
-use App\Exceptions\CustomErrorException;
-use App\Core\Enum\QueryParam;
-use App\Helpers\Validation;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Spatie\LaravelData\Data;
 
 class BaseService implements BaseServiceInterface
 {
-    protected BaseRepositoryInterface $entityRepository;
+    public function __construct(protected BaseRepositoryInterface $entityRepository)
+    {
+    }
 
     public function create(Data $data): Model
     {
         return $this->entityRepository->create($data->toArray());
     }
 
-    public function delete(int $id): void
+    public function delete(int|string $id): void
     {
         $this->entityRepository->delete($id);
     }
@@ -35,20 +34,17 @@ class BaseService implements BaseServiceInterface
         return $this->entityRepository->findAll($filter, $sort, $columns);
     }
 
-    /**
-     * @throws CustomErrorException
-     */
-    public function findAllPaginated(
-        Request $request,
-        array $columns = ['*']
-    ): LengthAwarePaginator {
-        $filters = Validation::getFilters($request->get(QueryParam::FILTERS_KEY));
-        $perPage = Validation::getPerPage($request->get(QueryParam::PAGINATION_KEY));
-        $sort = $request->get(QueryParam::ORDER_BY_KEY);
-        return $this->entityRepository->findAllPaginated($filters, $perPage, $sort, $columns);
+    public function findAllPaginated(ListQuery $query, array $columns = ['*']): LengthAwarePaginator
+    {
+        return $this->entityRepository->findAllPaginated(
+            $query->filters,
+            $query->perPage,
+            $query->sort,
+            $columns
+        );
     }
 
-    public function findById(int $id, array $columns = ['*']): Model
+    public function findById(int|string $id, array $columns = ['*']): Model
     {
         return $this->entityRepository->findById($id, $columns);
     }
@@ -63,7 +59,7 @@ class BaseService implements BaseServiceInterface
         return $this->entityRepository->findRandoms($records);
     }
 
-    public function update(int $id, Data $data): Model
+    public function update(int|string $id, Data $data): Model
     {
         return $this->entityRepository->update($id, $data->toArray());
     }
