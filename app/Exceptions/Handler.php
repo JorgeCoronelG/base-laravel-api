@@ -2,8 +2,8 @@
 
 namespace App\Exceptions;
 
-use App\Core\Traits\ApiResponse;
 use App\Core\Enum\Message;
+use App\Core\Traits\ApiResponse;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Database\QueryException;
@@ -58,7 +58,7 @@ class Handler extends ExceptionHandler
             }
 
             if ($e instanceof NotFoundHttpException) {
-                if (!is_null($e->getPrevious()) && $e->getPrevious() instanceof ModelNotFoundException) {
+                if (! is_null($e->getPrevious()) && $e->getPrevious() instanceof ModelNotFoundException) {
                     return $this->errorResponse(Message::MODEL_NOT_FOUND_EXCEPTION, Response::HTTP_NOT_FOUND);
                 }
 
@@ -100,11 +100,9 @@ class Handler extends ExceptionHandler
     /**
      * Convert an authentication exception into a response.
      *
-     * @param Request $request
-     * @param AuthenticationException $exception
-     * @return JsonResponse|ResponseHttp
+     * @param  Request  $request
      */
-    protected function unauthenticated($request, AuthenticationException $exception): JsonResponse | ResponseHttp
+    protected function unauthenticated($request, AuthenticationException $exception): JsonResponse|ResponseHttp
     {
         return $this->errorResponse(Message::AUTHENTICATION_EXCEPTION, Response::HTTP_UNAUTHORIZED);
     }
@@ -112,13 +110,12 @@ class Handler extends ExceptionHandler
     /**
      * Create a response object from the given validation exception.
      *
-     * @param ValidationException $e
-     * @param Request $request
-     * @return JsonResponse|ResponseHttp
+     * @param  Request  $request
      */
-    protected function convertValidationExceptionToResponse(ValidationException $e, $request): JsonResponse | ResponseHttp
+    protected function convertValidationExceptionToResponse(ValidationException $e, $request): JsonResponse|ResponseHttp
     {
         $errors = $e->validator->errors()->toArray();
+
         return $this->errorResponse($errors, Response::HTTP_UNPROCESSABLE_ENTITY);
     }
 }

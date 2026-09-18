@@ -15,7 +15,7 @@ use Illuminate\Http\Request;
 class ListQuery
 {
     /**
-     * @param Filter[] $filters
+     * @param  Filter[]  $filters
      */
     public function __construct(
         public array $filters = [],

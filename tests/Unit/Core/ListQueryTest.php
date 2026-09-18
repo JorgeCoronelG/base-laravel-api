@@ -12,7 +12,7 @@ class ListQueryTest extends TestCase
 {
     public function test_defaults(): void
     {
-        $query = new ListQuery();
+        $query = new ListQuery;
 
         $this->assertSame([], $query->filters);
         $this->assertNull($query->sort);

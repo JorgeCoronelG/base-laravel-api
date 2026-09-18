@@ -18,7 +18,7 @@ trait Sortable
             return $query;
         }
 
-        if (!property_exists($this, 'allowedSorts')) {
+        if (! property_exists($this, 'allowedSorts')) {
             throw new CustomErrorException(Message::getMessageHasNotAllowedSorts(get_class($this)), Response::HTTP_INTERNAL_SERVER_ERROR);
         }
 
@@ -32,7 +32,7 @@ trait Sortable
                 $sortField = substr($sortField, 1);
             }
 
-            if (!collect($this->allowedSorts)->contains($sortField)) {
+            if (! collect($this->allowedSorts)->contains($sortField)) {
                 throw new CustomErrorException(Message::INVALID_QUERY_PARAMETER, Response::HTTP_BAD_REQUEST);
             }
 

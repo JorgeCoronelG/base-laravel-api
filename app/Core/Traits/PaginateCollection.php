@@ -6,6 +6,7 @@ use Illuminate\Http\Resources\Json\ResourceCollection;
 
 /**
  * @author JorgeCoronelG
+ *
  * @version 1.0
  */
 trait PaginateCollection
@@ -30,7 +31,7 @@ trait PaginateCollection
                 'perPage' => $collection->perPage(),
                 'to' => $collection->lastItem(),
                 'total' => $collection->total(),
-            ]
+            ],
         ];
     }
 }

@@ -7,6 +7,7 @@ use Illuminate\Support\ServiceProvider;
 class RepositoryServiceProvider extends ServiceProvider
 {
     public const INTERFACE_REPOSITORY_NAMESPACE = 'App\Contracts\Repositories\\';
+
     public const IMPLEMENT_REPOSITORY_NAMESPACE = 'App\Repositories\\';
 
     protected array $repositories = [
@@ -22,7 +23,7 @@ class RepositoryServiceProvider extends ServiceProvider
     {
         foreach ($this->repositories as $interface => $implementation) {
             $this->app->bind(self::INTERFACE_REPOSITORY_NAMESPACE.$interface,
-                             self::IMPLEMENT_REPOSITORY_NAMESPACE.$implementation);
+                self::IMPLEMENT_REPOSITORY_NAMESPACE.$implementation);
         }
     }
 

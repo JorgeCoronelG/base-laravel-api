@@ -28,7 +28,7 @@ class BaseRepositoryTest extends TestCase
     {
         parent::setUp();
         $this->createItemsTable();
-        $this->repository = new ItemRepository();
+        $this->repository = new ItemRepository;
     }
 
     public function test_create_persists_and_returns_the_model(): void
@@ -159,7 +159,7 @@ class BaseRepositoryTest extends TestCase
     public function test_ids_can_be_uuid_strings(): void
     {
         $this->createUuidItemsTable();
-        $repository = new BaseRepository(new UuidItem());
+        $repository = new BaseRepository(new UuidItem);
 
         $item = $repository->create(['name' => 'Ana']);
         $this->assertIsString($item->id);

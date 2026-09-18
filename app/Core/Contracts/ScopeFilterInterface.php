@@ -3,13 +3,12 @@
 namespace App\Core\Contracts;
 
 use App\Core\Classes\Filter;
+use Illuminate\Database\Eloquent\Builder;
 
 interface ScopeFilterInterface
 {
     /**
-     * @param \Illuminate\Database\Eloquent\Builder $query
-     * @param Filter[] $filters
-     * @return \Illuminate\Database\Eloquent\Builder
+     * @param  Filter[]  $filters
      */
-    public function scopeFilter(\Illuminate\Database\Eloquent\Builder $query, array $filters = []): \Illuminate\Database\Eloquent\Builder;
+    public function scopeFilter(Builder $query, array $filters = []): Builder;
 }

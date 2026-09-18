@@ -53,7 +53,7 @@ class MakeRepositoryCommand extends GeneratesContractedClass
         $model = $this->option('model') ?: $baseName;
         $model = Str::startsWith($model, 'App\\') ? $model : 'App\Models\\'.str_replace('/', '\\', $model);
 
-        if (!class_exists($model)) {
+        if (! class_exists($model)) {
             $this->components->warn("El modelo [$model] no existe todavía. Créelo o use --model.");
         }
 

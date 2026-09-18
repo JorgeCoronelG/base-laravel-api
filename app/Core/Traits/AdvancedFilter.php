@@ -16,9 +16,8 @@ trait AdvancedFilter
      * o scopes globales de la consulta. Entre sí se unen con AND, salvo que el filtro indique 'or'.
      * Solo se pueden filtrar los campos de la propiedad pública allowedFilters del modelo.
      *
-     * @param Builder $query
-     * @param Filter[] $filters
-     * @return Builder
+     * @param  Filter[]  $filters
+     *
      * @throws CustomErrorException
      */
     public function scopeFilter(Builder $query, array $filters = []): Builder
@@ -27,7 +26,7 @@ trait AdvancedFilter
             return $query;
         }
 
-        if (!property_exists($this, 'allowedFilters')) {
+        if (! property_exists($this, 'allowedFilters')) {
             throw new CustomErrorException(
                 Message::getMessageHasNotAllowedFilters(get_class($this)),
                 Response::HTTP_INTERNAL_SERVER_ERROR
@@ -35,7 +34,7 @@ trait AdvancedFilter
         }
 
         foreach ($filters as $filter) {
-            if (!in_array($filter->field, $this->allowedFilters, true)) {
+            if (! in_array($filter->field, $this->allowedFilters, true)) {
                 throw new CustomErrorException(Message::INVALID_QUERY_PARAMETER, Response::HTTP_BAD_REQUEST);
             }
         }

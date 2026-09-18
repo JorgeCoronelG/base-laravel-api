@@ -5,12 +5,11 @@ namespace App\Core;
 use App\Core\Contracts\BaseRepositoryInterface;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Pagination\LengthAwarePaginator;
 
 class BaseRepository implements BaseRepositoryInterface
 {
-    public function __construct(protected Model $entity)
-    {
-    }
+    public function __construct(protected Model $entity) {}
 
     /**
      * @throws \Throwable
@@ -19,6 +18,7 @@ class BaseRepository implements BaseRepositoryInterface
     {
         $entity = $this->entity->newInstance($data);
         $entity->saveOrFail();
+
         return $entity;
     }
 
@@ -56,7 +56,7 @@ class BaseRepository implements BaseRepositoryInterface
         int $limit,
         ?string $sort = null,
         array $columns = ['*']
-    ): \Illuminate\Pagination\LengthAwarePaginator {
+    ): LengthAwarePaginator {
         return $this->entity
             ->filter($filters)
             ->applySort($sort)
@@ -99,6 +99,7 @@ class BaseRepository implements BaseRepositoryInterface
         $entity = $this->findById($id);
         $entity->fill($data);
         $entity->saveOrFail();
+
         return $entity;
     }
 

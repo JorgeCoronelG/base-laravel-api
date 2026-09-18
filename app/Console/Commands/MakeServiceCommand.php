@@ -52,7 +52,7 @@ class MakeServiceCommand extends GeneratesContractedClass
         $repository = str_replace('/', '\\', $this->option('repository') ?: $baseName);
         $repositoryInterface = 'App\Contracts\Repositories\\'.$repository.'RepositoryInterface';
 
-        if (!$this->files->exists($this->getPath($repositoryInterface))) {
+        if (! $this->files->exists($this->getPath($repositoryInterface))) {
             $this->components->warn("El repositorio [{$repository}Repository] no existe todavía. Créelo con make:repository o use --repository.");
         }
 

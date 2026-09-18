@@ -13,7 +13,8 @@ class PermissionMiddlewareTest extends TestCase
 {
     private function actAsUserWithRole(int $roleId): void
     {
-        $user = new class extends User {
+        $user = new class extends User
+        {
             public $role;
         };
         $user->role = (object) ['id' => $roleId];
@@ -23,7 +24,7 @@ class PermissionMiddlewareTest extends TestCase
 
     private function handle(string|int ...$roleIds): Response
     {
-        return (new Permission())->handle(
+        return (new Permission)->handle(
             Request::create('/'),
             fn () => new Response('ok'),
             ...$roleIds

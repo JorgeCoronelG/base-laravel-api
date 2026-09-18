@@ -19,10 +19,10 @@ trait EnumToArray
         return array_combine(self::names(), self::values());
     }
 
-    public static function classCss(int $case): string | null
+    public static function classCss(int $case): ?string
     {
         return null;
     }
 
-    abstract static function customName(int $case): string;
+    abstract public static function customName(int $case): string;
 }

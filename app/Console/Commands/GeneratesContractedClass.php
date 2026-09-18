@@ -49,7 +49,7 @@ abstract class GeneratesContractedClass extends GeneratorCommand
         $classNamespace = $this->getDefaultNamespace($rootNamespace);
         $class = $this->qualifyClass($this->getNameInput());
 
-        if (!Str::startsWith($class, $classNamespace.'\\')) {
+        if (! Str::startsWith($class, $classNamespace.'\\')) {
             $this->components->error("El nombre debe estar dentro de $classNamespace.");
 
             return self::FAILURE;
@@ -59,7 +59,7 @@ abstract class GeneratesContractedClass extends GeneratorCommand
         $interface = $rootNamespace.'\\'.$this->contractsNamespace().'\\'.$relative.'Interface';
 
         foreach ([$class, $interface] as $fqcn) {
-            if (!$this->option('force') && $this->files->exists($this->getPath($fqcn))) {
+            if (! $this->option('force') && $this->files->exists($this->getPath($fqcn))) {
                 $this->components->error("$fqcn ya existe. Use --force para sobrescribirlo.");
 
                 return self::FAILURE;
@@ -77,7 +77,7 @@ abstract class GeneratesContractedClass extends GeneratorCommand
     }
 
     /**
-     * @param array<string, string> $values
+     * @param  array<string, string>  $values
      */
     private function writeClass(string $fqcn, string $stub, array $values): void
     {
@@ -102,7 +102,7 @@ abstract class GeneratesContractedClass extends GeneratorCommand
         $path = $this->laravel['path'].'/'.$this->providerPath();
         $pattern = '/(protected array \$'.$this->providerProperty().' = \[)(.*?)(\n    \];)/s';
 
-        if (!$this->files->exists($path) || !preg_match($pattern, $this->files->get($path), $match)) {
+        if (! $this->files->exists($path) || ! preg_match($pattern, $this->files->get($path), $match)) {
             $this->components->warn("No se pudo registrar el binding. Agregue '$key' => '$value' en {$this->providerPath()}.");
 
             return;
@@ -117,7 +117,7 @@ abstract class GeneratesContractedClass extends GeneratorCommand
             fn (string $line) => trim($line) !== '' && trim($line) !== '//'
         ));
 
-        if ($lines !== [] && !str_ends_with(rtrim(end($lines)), ',')) {
+        if ($lines !== [] && ! str_ends_with(rtrim(end($lines)), ',')) {
             $lines[count($lines) - 1] = rtrim(end($lines)).',';
         }
 

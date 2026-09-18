@@ -14,10 +14,9 @@ trait ApiResponse
      * Función que retorna una respuesta JSON exitosa
      */
     protected function successResponse(
-        ResourceCollection | JsonResource | array $data,
+        ResourceCollection|JsonResource|array $data,
         int $code
-    ): JsonResponse
-    {
+    ): JsonResponse {
         return response()->json($data, $code);
     }
 
@@ -32,7 +31,7 @@ trait ApiResponse
     /**
      * Función que retorna una respuesta JSON errones
      */
-    protected function errorResponse(array | string $message, int $code): JsonResponse
+    protected function errorResponse(array|string $message, int $code): JsonResponse
     {
         return response()->json(['code' => $code, 'error' => $message], $code);
     }

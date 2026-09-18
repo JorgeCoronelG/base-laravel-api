@@ -5,6 +5,7 @@ namespace Tests\Feature\Core;
 use App\Core\Enum\Message;
 use App\Exceptions\CustomErrorException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Tests\TestCase;
 
@@ -19,7 +20,7 @@ class ExceptionHandlerTest extends TestCase
 
     public function test_model_not_found_returns_404_json(): void
     {
-        Route::get('/_test/model-not-found', fn () => throw new ModelNotFoundException());
+        Route::get('/_test/model-not-found', fn () => throw new ModelNotFoundException);
 
         $this->getJson('/_test/model-not-found')
             ->assertNotFound()
@@ -37,7 +38,7 @@ class ExceptionHandlerTest extends TestCase
 
     public function test_validation_error_returns_422_with_field_errors(): void
     {
-        Route::post('/_test/validate', fn (\Illuminate\Http\Request $r) => $r->validate(['name' => 'required']));
+        Route::post('/_test/validate', fn (Request $r) => $r->validate(['name' => 'required']));
 
         $this->postJson('/_test/validate', [])
             ->assertStatus(422)

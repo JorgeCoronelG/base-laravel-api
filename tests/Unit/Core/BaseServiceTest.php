@@ -22,7 +22,7 @@ class BaseServiceTest extends TestCase
     {
         parent::setUp();
         $this->createItemsTable();
-        $this->service = new ItemService(new ItemRepository());
+        $this->service = new ItemService(new ItemRepository);
     }
 
     public function test_create_from_data_object(): void
@@ -102,7 +102,7 @@ class BaseServiceTest extends TestCase
     {
         $this->seedItems();
 
-        $page = $this->service->findAllPaginated(new ListQuery());
+        $page = $this->service->findAllPaginated(new ListQuery);
 
         $this->assertSame(5, $page->perPage());
     }

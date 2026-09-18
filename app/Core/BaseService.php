@@ -12,9 +12,7 @@ use Spatie\LaravelData\Data;
 
 class BaseService implements BaseServiceInterface
 {
-    public function __construct(protected BaseRepositoryInterface $entityRepository)
-    {
-    }
+    public function __construct(protected BaseRepositoryInterface $entityRepository) {}
 
     public function create(Data $data): Model
     {
