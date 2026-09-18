@@ -92,7 +92,11 @@ class Validation
             throw new CustomErrorException(Message::INVALID_QUERY_PARAMETER, Response::HTTP_BAD_REQUEST);
         }
 
-        if (count($dateParse) !== 3 && !checkdate($dateParse[1], $dateParse[2], $dateParse[0])) {
+        if (
+            count($dateParse) !== 3 ||
+            !ctype_digit(implode('', $dateParse)) ||
+            !checkdate((int) $dateParse[1], (int) $dateParse[2], (int) $dateParse[0])
+        ) {
             throw new CustomErrorException(Message::INVALID_QUERY_PARAMETER, Response::HTTP_BAD_REQUEST);
         }
 

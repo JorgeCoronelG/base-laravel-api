@@ -1,0 +1,23 @@
+includes:
+    - vendor/larastan/larastan/extension.neon
+
+parameters:
+    paths:
+        - app
+    level: 5
+
+    ignoreErrors:
+        # BaseRepository asume que los modelos usan los traits AdvancedFilter y Sortable
+        # (scopes filter() y applySort()), que PHPStan no puede inferir desde Model.
+        -
+            message: '#Call to an undefined method Illuminate\\Database\\Eloquent\\Model::filter\(\)#'
+            path: app/Core/BaseRepository.php
+            count: 2
+        # Los traits de app/Core/Traits los usan los modelos de cada proyecto, no esta base.
+        -
+            identifier: trait.unused
+            path: app/Core/Traits/*
+        # Permission asume que el modelo User del proyecto tiene una relación "role".
+        -
+            message: '#Access to an undefined property App\\Models\\User::\$role#'
+            path: app/Http/Middleware/Permission.php

@@ -39,11 +39,16 @@ Los puertos se pueden cambiar con `APP_PORT`, `PMA_PORT` y `DB_FORWARD_PORT` en 
 ```
 make test                        # ejecuta los tests (SQLite en memoria)
 make test ARGS=tests/Unit/Core   # solo un grupo de tests
+make stan                        # análisis estático (Larastan, nivel 5)
 make artisan cmd="route:list"    # cualquier comando de artisan
 make composer cmd="require x/y"  # cualquier comando de composer
 make shell                       # terminal dentro del contenedor
 make help                        # lista todos los comandos
 ```
+
+## Integración continua
+
+El workflow `.github/workflows/ci.yml` corre Larastan y los tests en cada push a `main` y en cada pull request.
 
 ## Cómo crear un repositorio y un servicio
 
