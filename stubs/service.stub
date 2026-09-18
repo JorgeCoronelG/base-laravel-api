@@ -1,0 +1,15 @@
+<?php
+
+namespace {{ namespace }};
+
+use {{ repositoryInterface }};
+use {{ interface }};
+use App\Core\BaseService;
+
+class {{ class }} extends BaseService implements {{ interfaceName }}
+{
+    public function __construct({{ repositoryInterfaceName }} $repository)
+    {
+        parent::__construct($repository);
+    }
+}

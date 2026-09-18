@@ -52,8 +52,24 @@ El workflow `.github/workflows/ci.yml` corre Larastan y los tests en cada push a
 
 ## Cómo crear un repositorio y un servicio
 
-1. Crear la interfaz en `app/Contracts/Repositories` o `app/Contracts/Services`. Puede extender `BaseRepositoryInterface` / `BaseServiceInterface`, o solo las partes que se necesiten (`ReadableRepositoryInterface`, `WritableRepositoryInterface`, `BulkRepositoryInterface`, `RelationSyncRepositoryInterface`).
-2. Crear la implementación en `app/Repositories` o `app/Services`, extendiendo `BaseRepository` o `BaseService` y pasando la dependencia al constructor padre:
+Con los comandos (por separado):
+
+```
+make artisan cmd="make:repository Product"
+make artisan cmd="make:service Product"
+```
+
+Cada uno crea la interfaz en `app/Contracts/...`, la implementación en `app/Repositories` o `app/Services`, y registra el binding en `RepositoryServiceProvider` o `ServiceLogicServiceProvider`. Opciones:
+
+| Opción                     | Efecto                                                                  |
+|----------------------------|-------------------------------------------------------------------------|
+| `--model=Inventory/Part`   | (repositorio) modelo a usar; por defecto `App\Models\<Nombre>`           |
+| `--repository=Customer`    | (servicio) repositorio a inyectar; por defecto el mismo nombre           |
+| `--force`                  | sobrescribe los archivos si ya existen                                  |
+
+Se pueden usar subcarpetas (`Inventory/Part`) y el sufijo `Repository`/`Service` es opcional. Las plantillas están en `stubs/` y se pueden editar directamente.
+
+El resultado es equivalente a hacerlo a mano. Para un repositorio:
 
 ```php
 class ProductRepository extends BaseRepository implements ProductRepositoryInterface
@@ -63,7 +79,11 @@ class ProductRepository extends BaseRepository implements ProductRepositoryInter
         parent::__construct($entity);
     }
 }
+```
 
+y para un servicio:
+
+```php
 class ProductService extends BaseService implements ProductServiceInterface
 {
     public function __construct(ProductRepositoryInterface $repository)
@@ -73,7 +93,7 @@ class ProductService extends BaseService implements ProductServiceInterface
 }
 ```
 
-3. Registrar la pareja interfaz => implementación en `RepositoryServiceProvider` o `ServiceLogicServiceProvider`.
+Las interfaces extienden `BaseRepositoryInterface` / `BaseServiceInterface`; se puede reducir a `ReadableRepositoryInterface`, `WritableRepositoryInterface`, `BulkRepositoryInterface` o `RelationSyncRepositoryInterface` si no se necesita todo.
 
 Los ids pueden ser `int` o `string` (UUID/ULID).
 
