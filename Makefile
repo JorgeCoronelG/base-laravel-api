@@ -3,7 +3,7 @@
 
 RUN = docker compose run --rm --no-deps app
 
-.PHONY: help setup up down build install test stan artisan composer shell logs
+.PHONY: help setup up down build install test stan lint format artisan composer shell logs
 
 help: ## Muestra los comandos disponibles
 	@grep -E '^[a-z-]+:.*##' $(MAKEFILE_LIST) | awk -F':.*## ' '{printf "  make %-10s %s\n", $$1, $$2}'
@@ -31,6 +31,12 @@ test: ## Ejecuta los tests (SQLite en memoria, no necesita MySQL)
 
 stan: ## Análisis estático con Larastan
 	$(RUN) php -d memory_limit=1G vendor/bin/phpstan analyse --no-progress
+
+lint: ## Verifica el estilo de código con Pint (no modifica archivos)
+	$(RUN) vendor/bin/pint --test
+
+format: ## Corrige el estilo de código con Pint
+	$(RUN) vendor/bin/pint
 
 artisan: ## Ejecuta artisan. Ejemplo: make artisan cmd="route:list"
 	docker compose run --rm app php artisan $(cmd)

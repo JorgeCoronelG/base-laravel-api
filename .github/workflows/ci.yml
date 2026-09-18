@@ -30,6 +30,9 @@ jobs:
       - name: Instalar dependencias
         run: composer install --no-interaction --no-progress --prefer-dist
 
+      - name: Estilo de código (Pint)
+        run: vendor/bin/pint --test
+
       - name: Análisis estático (Larastan)
         run: vendor/bin/phpstan analyse --no-progress --memory-limit=1G
 
