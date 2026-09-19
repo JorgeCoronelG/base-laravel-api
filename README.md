@@ -151,7 +151,8 @@ class ProductController extends BaseApiController
 Las rutas: lectura para cualquier usuario autenticado y escritura solo para el rol 1:
 
 ```php
-Route::post('/login', [AuthController::class, 'login']);   // devuelve $user->createToken('api')->plainTextToken
+Route::post('/login', [AuthController::class, 'login'])     // devuelve $user->createToken('api')->plainTextToken
+    ->middleware('throttle:login');                          // ver "Limitar los intentos de login"
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/products', [ProductController::class, 'index']);
@@ -172,6 +173,18 @@ curl -s -H Accept:application/json -H "Authorization: Bearer <token>" \
 ```
 
 Un listado paginado responde con `data`, `links` (`first`, `last`, `prev`, `next`, que conservan `per_page`, `sort` y `q`) y `meta` (`currentPage`, `from`, `lastPage`, `perPage`, `to`, `total`). Un listado sin paginar responde solo con el arreglo de registros.
+
+### Limitar los intentos de login
+
+El grupo `api` ya limita a 60 peticiones por minuto, pero eso no protege un login: alguien podría probar 60 contraseñas por minuto. Define un límite más estricto por correo e IP en `RouteServiceProvider::boot()` y aplícalo a la ruta con `throttle:login`:
+
+```php
+RateLimiter::for('login', function (Request $request) {
+    return Limit::perMinute(5)->by($request->input('email').'|'.$request->ip());
+});
+```
+
+Al superarlo responde `429` con `{"code": 429, "error": "Muchos intentos realizados."}` y el encabezado `Retry-After`. Al usar el correo en la clave, un atacante no bloquea a otros usuarios que comparten su IP. Esto está cubierto por un test en `ExceptionHandlerTest`.
 
 ## Integración continua
 

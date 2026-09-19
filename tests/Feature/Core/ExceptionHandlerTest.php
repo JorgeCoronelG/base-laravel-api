@@ -4,8 +4,10 @@ namespace Tests\Feature\Core;
 
 use App\Core\Enum\Message;
 use App\Exceptions\CustomErrorException;
+use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Route;
 use Tests\TestCase;
 
@@ -71,5 +73,25 @@ class ExceptionHandlerTest extends TestCase
         $this->getJson('/_test/boom')
             ->assertStatus(500)
             ->assertJsonPath('error', 'secreto');
+    }
+
+    public function test_login_rate_limit_returns_429_per_email_and_ip(): void
+    {
+        // Misma definición que la recomendada en el README.
+        RateLimiter::for('login', fn (Request $request) => Limit::perMinute(5)->by($request->input('email').'|'.$request->ip()));
+        Route::post('/_test/login', fn () => response()->json(['code' => 401, 'error' => 'Credenciales inválidas.'], 401))
+            ->middleware('throttle:login');
+
+        for ($i = 0; $i < 5; $i++) {
+            $this->postJson('/_test/login', ['email' => 'a@example.com'])->assertUnauthorized();
+        }
+
+        $this->postJson('/_test/login', ['email' => 'a@example.com'])
+            ->assertStatus(429)
+            ->assertExactJson(['code' => 429, 'error' => Message::THROTTLE_REQUESTS_EXCEPTION])
+            ->assertHeader('Retry-After');
+
+        // Otro correo desde la misma IP no queda bloqueado.
+        $this->postJson('/_test/login', ['email' => 'b@example.com'])->assertUnauthorized();
     }
 }
