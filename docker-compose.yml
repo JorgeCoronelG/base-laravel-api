@@ -7,10 +7,6 @@ services:
       - .:/app
     ports:
       - "${APP_PORT:-8000}:8000"
-    environment:
-      # Dentro de Docker la base de datos es el servicio "mysql", no 127.0.0.1.
-      DB_HOST: mysql
-      DB_PORT: 3306
     depends_on:
       mysql:
         condition: service_healthy
