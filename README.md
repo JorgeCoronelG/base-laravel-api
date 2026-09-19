@@ -19,6 +19,8 @@ make setup
 
 Construye la imagen, instala las dependencias, crea el `.env`, genera la clave y ejecuta las migraciones.
 
+El `.env` usa `DB_HOST=mysql` (el nombre del servicio de Docker). Si ya tenías un `.env` de una versión anterior con `DB_HOST=127.0.0.1`, cámbialo: `php artisan serve` no recibe las variables de Docker y lee este archivo.
+
 Después, para trabajar:
 
 ```
@@ -47,6 +49,129 @@ make composer cmd="require x/y"  # cualquier comando de composer
 make shell                       # terminal dentro del contenedor
 make help                        # lista todos los comandos
 ```
+
+## Roles y permisos
+
+La tabla `roles` (`id` tinyint, `nombre`) y la columna `users.role_id` (nullable, con llave foránea) vienen en las migraciones. `User` pertenece a un `Role` (`$user->role`) y `Role` tiene muchos `User`.
+
+El middleware `permission` recibe los ids de rol permitidos y responde `403` si el rol del usuario no está en la lista, o si no tiene rol:
+
+```php
+Route::middleware(['auth:sanctum', 'permission:1'])->post('/products', ...);   // solo el rol 1
+Route::middleware(['auth:sanctum', 'permission:1,2'])->get('/reports', ...);    // roles 1 o 2
+```
+
+Los roles no vienen sembrados: se crean en un seeder o en la migración de cada proyecto.
+
+## Ejemplo completo: una entidad con login por token
+
+Esto se probó de punta a punta con MySQL (login, tokens, permisos por rol, CRUD, filtros, orden y paginación). El código no se incluye en la base para no traer entidades que borrar en cada proyecto; estos son los pasos:
+
+```
+make artisan cmd="make:model Product -m"     # y completa la migración
+make artisan cmd="make:repository Product"
+make artisan cmd="make:service Product"
+```
+
+El modelo usa los traits y declara qué se puede filtrar y ordenar:
+
+```php
+class Product extends Model
+{
+    use AdvancedFilter, Sortable;
+
+    protected $fillable = ['nombre', 'precio', 'stock'];
+
+    /** @var array<int, string> */
+    public array $allowedFilters = ['id', 'nombre', 'precio', 'stock'];
+
+    /** @var array<int, string> */
+    public array $allowedSorts = ['id', 'nombre', 'precio', 'stock'];
+}
+```
+
+Un DTO para crear y otro con `Optional` para actualizar parcialmente (PATCH), y un `Resource` con `@mixin` para que Larastan conozca las propiedades:
+
+```php
+class ProductData extends Data
+{
+    public function __construct(public string $nombre, public float $precio, public int $stock = 0) {}
+}
+
+class ProductPatchData extends Data
+{
+    public function __construct(
+        public string|Optional $nombre,
+        public float|Optional $precio,
+        public int|Optional $stock,
+    ) {}
+}
+
+/** @mixin Product */
+class ProductResource extends JsonResource { /* toArray(): id, nombre, precio, stock */ }
+```
+
+El controller extiende `BaseApiController` y solo habla con el servicio:
+
+```php
+class ProductController extends BaseApiController
+{
+    public function __construct(private readonly ProductServiceInterface $service) {}
+
+    public function index(Request $request): JsonResponse
+    {
+        return $this->showAll(ProductResource::collection(
+            $this->service->findAllPaginated(ListQuery::fromRequest($request))
+        ));
+    }
+
+    public function store(Request $request): JsonResponse
+    {
+        $product = $this->service->create(ProductData::validateAndCreate($request));
+
+        return $this->showOne(new ProductResource($product), 201);
+    }
+
+    public function update(Request $request, int $id): JsonResponse
+    {
+        return $this->showOne(new ProductResource(
+            $this->service->update($id, ProductPatchData::validateAndCreate($request))
+        ));
+    }
+
+    public function destroy(int $id): Response
+    {
+        $this->service->delete($id);
+
+        return $this->noContentResponse();
+    }
+}
+```
+
+Las rutas: lectura para cualquier usuario autenticado y escritura solo para el rol 1:
+
+```php
+Route::post('/login', [AuthController::class, 'login']);   // devuelve $user->createToken('api')->plainTextToken
+
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/products', [ProductController::class, 'index']);
+    Route::middleware('permission:1')->group(function () {
+        Route::post('/products', [ProductController::class, 'store']);
+        Route::patch('/products/{id}', [ProductController::class, 'update']);
+        Route::delete('/products/{id}', [ProductController::class, 'destroy']);
+    });
+});
+```
+
+Uso desde la terminal:
+
+```
+curl -s -H Accept:application/json -d '{"email":"admin@example.com","password":"password"}' localhost:8000/api/login
+curl -s -H Accept:application/json -H "Authorization: Bearer <token>" \
+  "localhost:8000/api/products?per_page=2&sort=-precio&q=%7B%22filters%22%3A%5B%5D%7D"
+```
+
+Un listado paginado responde con `data`, `links` (`first`, `last`, `prev`, `next`, que conservan `per_page`, `sort` y `q`) y `meta` (`currentPage`, `from`, `lastPage`, `perPage`, `to`, `total`). Un listado sin paginar responde solo con el arreglo de registros.
 
 ## Integración continua
 
