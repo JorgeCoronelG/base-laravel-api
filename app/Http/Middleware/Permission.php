@@ -27,9 +27,9 @@ class Permission
         }
 
         // Los parámetros de middleware (permission:1,2) llegan como string, por eso se compara como string.
-        $roleId = (string) $user->role->id;
+        $roleId = $user->role?->id;
 
-        if (! in_array($roleId, array_map('strval', $roleIds), true)) {
+        if ($roleId === null || ! in_array((string) $roleId, array_map('strval', $roleIds), true)) {
             throw new AuthorizationException;
         }
 

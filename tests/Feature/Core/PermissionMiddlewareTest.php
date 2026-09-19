@@ -3,24 +3,23 @@
 namespace Tests\Feature\Core;
 
 use App\Http\Middleware\Permission;
+use App\Models\Role;
 use App\Models\User;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Auth\AuthenticationException;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Tests\TestCase;
 
 class PermissionMiddlewareTest extends TestCase
 {
+    use RefreshDatabase;
+
     private function actAsUserWithRole(int $roleId): void
     {
-        $user = new class extends User
-        {
-            public $role;
-        };
-        $user->role = (object) ['id' => $roleId];
-
-        $this->actingAs($user);
+        $role = Role::factory()->create(['id' => $roleId]);
+        $this->actingAs(User::factory()->for($role)->create());
     }
 
     private function handle(string|int ...$roleIds): Response
@@ -60,6 +59,14 @@ class PermissionMiddlewareTest extends TestCase
         $this->actAsUserWithRole(2);
 
         $this->assertSame('ok', $this->handle('1', '2', '3')->getContent());
+    }
+
+    public function test_user_without_role_is_denied(): void
+    {
+        $this->actingAs(User::factory()->create());
+
+        $this->expectException(AuthorizationException::class);
+        $this->handle(1);
     }
 
     public function test_unauthenticated_user_is_rejected_with_authentication_exception(): void

@@ -22,7 +22,3 @@ parameters:
         -
             identifier: trait.unused
             path: app/Core/Traits/*
-        # Permission asume que el modelo User del proyecto tiene una relación "role".
-        -
-            message: '#Access to an undefined property App\\Models\\User::\$role#'
-            path: app/Http/Middleware/Permission.php
