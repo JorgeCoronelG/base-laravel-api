@@ -86,7 +86,8 @@ class BaseRepository implements BaseRepositoryInterface
         ?string $sort = null,
         array $columns = ['*']
     ): LengthAwarePaginator {
-        return $this->listQuery($filters, $sort)->paginate($limit, $columns);
+        // withQueryString: los enlaces de siguiente/anterior conservan filtros, orden y tamaño de página.
+        return $this->listQuery($filters, $sort)->paginate($limit, $columns)->withQueryString();
     }
 
     /**

@@ -110,6 +110,20 @@ class BaseRepositoryTest extends TestCase
         $this->assertSame(2, $page->lastPage());
     }
 
+    public function test_find_all_paginated_links_keep_the_query_string(): void
+    {
+        $this->seedItems();
+        request()->query->add(['per_page' => '2', 'sort' => '-name', 'q' => '{"filters":[]}']);
+
+        $page = $this->repository->findAllPaginated([], 2);
+
+        $next = (string) $page->nextPageUrl();
+        $this->assertStringContainsString('page=2', $next);
+        $this->assertStringContainsString('per_page=2', $next);
+        $this->assertStringContainsString('sort=-name', $next);
+        $this->assertStringContainsString('q=', $next);
+    }
+
     public function test_find_random_returns_a_record(): void
     {
         $this->seedItems();

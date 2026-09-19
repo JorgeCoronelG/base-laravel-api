@@ -2,6 +2,7 @@
 
 namespace App\Core\Traits;
 
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Http\Resources\Json\ResourceCollection;
@@ -10,6 +11,8 @@ use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 trait ApiResponse
 {
+    use PaginateCollection;
+
     /**
      * Función que retorna una respuesta JSON exitosa
      *
@@ -51,10 +54,16 @@ trait ApiResponse
     }
 
     /**
-     * Función que retorna un JSON con un listado de registros
+     * Función que retorna un JSON con un listado de registros.
+     * Si la colección viene paginada se devuelve con data, links y meta (ver PaginateCollection);
+     * de lo contrario, solo la lista de registros.
      */
     protected function showAll(ResourceCollection $collection, int $code = 200): JsonResponse
     {
+        if ($collection->resource instanceof LengthAwarePaginator) {
+            return $this->successResponse($this->getPaginationCollection($collection), $code);
+        }
+
         return $this->successResponse($collection, $code);
     }
 
