@@ -7,6 +7,7 @@ Historial de este proyecto base. Al final se conserva, sin cambios, el historial
 ### Cambios que rompen compatibilidad
 
 - **Roles:** la relación `User` ↔ `Role` pasó de uno a muchos a muchos a muchos. Se eliminó `users.role_id` y se agregó la tabla pivote `role_user`. `User::role()` (un solo rol) se reemplazó por `User::roles()`; `Role::users()` ahora es `belongsToMany`. El middleware `permission` autoriza si el usuario tiene **alguno** de los roles indicados.
+- **Eliminación lógica:** `users` y `roles` usan `SoftDeletes` (columna `deleted_at`). `delete()`, `bulkDelete()` y las consultas de listado ya no eliminan la fila físicamente; queda oculta por el scope global y se puede consultar con `withTrashed()` o restaurar con `restore()`.
 
 ## [2.0.0] - 2026-09-18
 

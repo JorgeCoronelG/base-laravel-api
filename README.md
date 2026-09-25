@@ -63,6 +63,10 @@ Route::middleware(['auth:sanctum', 'permission:1,2'])->get('/reports', ...);    
 
 Los roles no vienen sembrados: se crean en un seeder o en la migración de cada proyecto.
 
+## Eliminación lógica
+
+`User` y `Role` usan `SoftDeletes`: `delete()` no borra la fila, solo llena `deleted_at`. Los métodos de `BaseRepository` (`delete`, `bulkDelete`, `findAll`, `findById`, etc.) ya funcionan así sin cambios adicionales. Para incluir o filtrar los eliminados: `User::withTrashed()`, `User::onlyTrashed()`, y `$user->restore()` para deshacer el borrado.
+
 ## Ejemplo completo: una entidad con login por token
 
 Esto se probó de punta a punta con MySQL (login, tokens, permisos por rol, CRUD, filtros, orden y paginación). El código no se incluye en la base para no traer entidades que borrar en cada proyecto; estos son los pasos:

@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('roles', function (Blueprint $table) {
             $table->tinyIncrements('id');
             $table->string('nombre', 100);
+            $table->softDeletes();
         });
     }
 
