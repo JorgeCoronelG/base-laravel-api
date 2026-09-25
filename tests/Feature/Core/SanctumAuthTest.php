@@ -37,13 +37,13 @@ class SanctumAuthTest extends TestCase
 
     private function userWithRole(?int $roleId): User
     {
-        $user = User::factory();
+        $user = User::factory()->create();
 
         if ($roleId !== null) {
-            $user = $user->for(Role::factory()->create(['id' => $roleId]));
+            $user->roles()->attach(Role::factory()->create(['id' => $roleId]));
         }
 
-        return $user->create();
+        return $user;
     }
 
     private function bearer(User $user): array

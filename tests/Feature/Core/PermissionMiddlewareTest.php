@@ -19,7 +19,10 @@ class PermissionMiddlewareTest extends TestCase
     private function actAsUserWithRole(int $roleId): void
     {
         $role = Role::factory()->create(['id' => $roleId]);
-        $this->actingAs(User::factory()->for($role)->create());
+        $user = User::factory()->create();
+        $user->roles()->attach($role);
+
+        $this->actingAs($user);
     }
 
     private function handle(string|int ...$roleIds): Response

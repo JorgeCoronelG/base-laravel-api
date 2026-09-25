@@ -16,22 +16,25 @@ class RoleRelationTest extends TestCase
     {
         $this->assertTrue(Schema::hasColumns('roles', ['id', 'nombre']));
         $this->assertFalse(Schema::hasColumn('roles', 'created_at'));
-        $this->assertTrue(Schema::hasColumn('users', 'role_id'));
+        $this->assertFalse(Schema::hasColumn('users', 'role_id'));
+        $this->assertTrue(Schema::hasColumns('role_user', ['role_id', 'user_id']));
     }
 
-    public function test_user_belongs_to_a_role(): void
+    public function test_user_belongs_to_many_roles(): void
     {
         $role = Role::factory()->create(['nombre' => 'Administrador']);
-        $user = User::factory()->for($role)->create();
+        $user = User::factory()->create();
+        $user->roles()->attach($role);
 
-        $this->assertTrue($user->role->is($role));
-        $this->assertSame('Administrador', $user->fresh()->role->nombre);
+        $this->assertTrue($user->roles->contains($role));
+        $this->assertSame('Administrador', $user->fresh()->roles->first()->nombre);
     }
 
     public function test_role_has_many_users(): void
     {
         $role = Role::factory()->create();
-        User::factory()->count(2)->for($role)->create();
+        $users = User::factory()->count(2)->create();
+        $role->users()->attach($users);
         User::factory()->create();
 
         $this->assertCount(2, $role->users);
@@ -41,17 +44,16 @@ class RoleRelationTest extends TestCase
     {
         $user = User::factory()->create();
 
-        $this->assertNull($user->role_id);
-        $this->assertNull($user->role);
+        $this->assertCount(0, $user->roles);
     }
 
-    public function test_role_id_can_be_mass_assigned(): void
+    public function test_a_user_can_have_multiple_roles(): void
     {
-        $role = Role::factory()->create();
+        $roles = Role::factory()->count(2)->create();
         $user = User::factory()->create();
 
-        $user->update(['role_id' => $role->id]);
+        $user->roles()->attach($roles);
 
-        $this->assertSame($role->id, $user->fresh()->role_id);
+        $this->assertCount(2, $user->fresh()->roles);
     }
 }

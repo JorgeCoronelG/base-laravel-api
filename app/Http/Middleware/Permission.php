@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\Role;
 use Closure;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Auth\AuthenticationException;
@@ -27,9 +28,10 @@ class Permission
         }
 
         // Los parámetros de middleware (permission:1,2) llegan como string, por eso se compara como string.
-        $roleId = $user->role?->id;
+        $userRoleIds = $user->roles->map(fn (Role $role): string => (string) $role->id)->all();
+        $allowedRoleIds = array_map('strval', $roleIds);
 
-        if ($roleId === null || ! in_array((string) $roleId, array_map('strval', $roleIds), true)) {
+        if (array_intersect($userRoleIds, $allowedRoleIds) === []) {
             throw new AuthorizationException;
         }
 

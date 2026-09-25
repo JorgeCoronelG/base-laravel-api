@@ -52,9 +52,9 @@ make help                        # lista todos los comandos
 
 ## Roles y permisos
 
-La tabla `roles` (`id` tinyint, `nombre`) y la columna `users.role_id` (nullable, con llave foránea) vienen en las migraciones. `User` pertenece a un `Role` (`$user->role`) y `Role` tiene muchos `User`.
+La tabla `roles` (`id` tinyint, `nombre`) y la tabla pivote `role_user` vienen en las migraciones. Es una relación de muchos a muchos: `User` tiene muchos `Role` (`$user->roles`) y `Role` tiene muchos `User` (`$role->users`).
 
-El middleware `permission` recibe los ids de rol permitidos y responde `403` si el rol del usuario no está en la lista, o si no tiene rol:
+El middleware `permission` recibe los ids de rol permitidos y responde `403` si ninguno de los roles del usuario está en la lista, o si no tiene roles:
 
 ```php
 Route::middleware(['auth:sanctum', 'permission:1'])->post('/products', ...);   // solo el rol 1
